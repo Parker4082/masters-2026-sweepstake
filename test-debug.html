@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Add Participant Test</h1>
+    <input type="text" id="participantName" placeholder="Name">
+    <input type="email" id="participantEmail" placeholder="Email">
+    <button onclick="testAdd()">Add</button>
+    <div id="result"></div>
+
+    <script>
+        // Check if functions exist
+        console.log('Testing participant add...');
+        
+        function testAdd() {
+            console.log('Button clicked!');
+            const name = document.getElementById('participantName').value;
+            const email = document.getElementById('participantEmail').value;
+            console.log('Name:', name, 'Email:', email);
+            document.getElementById('result').innerHTML = 'Name: ' + name + '<br>Email: ' + email;
+        }
+    </script>
+</body>
+</html>

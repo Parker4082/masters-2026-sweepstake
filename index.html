@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masters Tournament 2026 | Golf Sweepstake</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hero Header -->
+    <header class="hero-header">
+        <img src="WhatsApp_Image_20260109_at_16_30_10.jpeg" alt="Masters Tournament Group Photo" class="hero-photo">
+        <div class="hero-overlay">
+            <h1>Masters 2026</h1>
+            <p class="subtitle">Golf Sweepstake</p>
+            <p class="tagline">"A Tradition Unlike Any Other"</p>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button id="tab-join" class="nav-tab active" onclick="switchTab('join')">Join Sweepstake</button>
+        <button id="tab-formguide" class="nav-tab" onclick="switchTab('formguide')">Form Guide</button>
+        <button id="tab-draft" class="nav-tab" onclick="switchTab('draft')">Draft</button>
+        <button id="tab-teams" class="nav-tab" onclick="switchTab('teams')">Teams</button>
+        <button id="tab-leaderboard" class="nav-tab" onclick="switchTab('leaderboard')">Leaderboard</button>
+        <button id="tab-results" class="nav-tab" onclick="switchTab('results')">Results</button>
+    </nav>
+
+    <main class="container">
+        
+        <!-- JOIN SWEEPSTAKE TAB -->
+        <section id="joinTab" class="tab-content active">
+            <div class="content">
+                <h2 class="section-title">Join the Sweepstake</h2>
+                
+                <!-- How It Works -->
+                <div class="how-it-works" style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #006747;">
+                    <h3 style="color: #006747; margin-top: 0;">How It Works</h3>
+                    <ol style="line-height: 1.8; color: #333;">
+                        <li><strong>Sign Up:</strong> Enter your name and email to join (6-12 participants needed)</li>
+                        <li><strong>Draft:</strong> Once signup closes, we'll have a 2-round snake draft to pick golfers</li>
+                        <li><strong>Auto-Assign:</strong> Remaining golfers are automatically assigned to balance teams</li>
+                        <li><strong>Tournament:</strong> Track your team's performance throughout the Masters</li>
+                        <li><strong>Winner:</strong> The team with the best-performing golfer wins!</li>
+                    </ol>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="draft-setup">
+                    <div class="setup-section">
+                        <h3>Enter Your Details</h3>
+                        <p style="color: #666; margin-bottom: 20px;">
+                            We need 6-12 participants to start the draft.
+                        </p>
+                        <div class="input-group">
+                            <input type="text" id="participantName" placeholder="Your name" style="flex: 1;">
+                            <input type="email" id="participantEmail" placeholder="Your email" style="flex: 1;">
+                            <button class="btn btn-primary" onclick="addParticipant()">Join Draft</button>
+                        </div>
+                        <div id="participantsList" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORM GUIDE TAB -->
+        <section id="formguideTab" class="tab-content">
+            <div class="content">
+                <h2 class="section-title">Form Guide</h2>
+                
+                <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: var(--card-shadow);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <input type="text" id="formGuideSearch" placeholder="Search golfer name..." 
+                               onkeyup="filterFormGuide()"
+                               style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                        
+                        <select id="formGuideSortBy" onchange="sortFormGuide()" 
+                                style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                            <option value="rank">Sort by World Rank</option>
+                            <option value="form">Sort by Form Rating</option>
+                            <option value="masters2025">Sort by 2025 Masters Finish</option>
+                            <option value="strokesGained">Sort by Strokes Gained</option>
+                            <option value="name">Sort by Name (A-Z)</option>
+                        </select>
+                        
+                        <select id="formGuideFilter" onchange="filterFormGuide()" 
+                                style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+                            <option value="all">All Golfers</option>
+                            <option value="highForm">High Form (8.0+)</option>
+                            <option value="majorWinners">Major Winners</option>
+                            <option value="augustaWinners">Augusta Winners</option>
+                            <option value="topStrokes">Top Strokes Gained (2.0+)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="formGuideDisplay"></div>
+            </div>
+        </section>
+
+        <!-- DRAFT TAB -->
+        <section id="draftTab" class="tab-content">
+            <div class="content">
+                <h2 class="section-title">Draft</h2>
+                
+                <!-- Pre-Draft Section: Shows draft order after signup closes, before draft starts -->
+                <div id="preDraftSection">
+                    <!-- Draft Order Display (shown after signup closes) -->
+                    <div id="draftOrderDisplay"></div>
+                    <div id="draftScheduleDisplay"></div>
+                </div>
+
+                <!-- Live Draft Interface (shown during draft) -->
+                <div id="liveDraftSection" style="display: none;">
+                    <!-- Populated by renderLiveDraft() -->
+                </div>
+                
+                <!-- Snake Draft Complete - Auto-Pick Phase -->
+                <div id="snakeDraftCompleteSection" style="display: none;">
+                    <div style="text-align: center; padding: 50px;">
+                        <h2 style="color: #006747; margin-bottom: 20px;">Snake Draft Complete!</h2>
+                        <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">
+                            Manual picks are done. Remaining golfers will be auto-assigned.
+                        </p>
+                        <button class="btn btn-success btn-large" onclick="executeAutoPick()">
+                            Assign Remaining Golfers
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Draft Complete -->
+                <div id="draftResults" style="display: none;">
+                    <div class="success-message">
+                        <h2>Draft Complete!</h2>
+                        <p>All golfers have been assigned to teams.</p>
+                        <button class="btn btn-primary" onclick="switchTab('teams')">View Teams</button>
+                        <button class="btn btn-secondary" onclick="switchTab('leaderboard')" style="margin-left: 10px;">
+                            View Leaderboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TEAMS TAB -->
+        <section id="teamsTab" class="tab-content">
+            <div class="content">
+                <h2 class="section-title">Team Rosters</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 30px;">
+                    Click on a team to view their golfers
+                </p>
+                <div id="teamsDisplay"></div>
+            </div>
+        </section>
+
+        <!-- LEADERBOARD TAB -->
+        <section id="leaderboardTab" class="tab-content">
+            <div class="content">
+                <h2 class="section-title">Leaderboard</h2>
+                
+                <!-- Toggle between Sweepstake and Tournament -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div class="toggle-buttons" style="display: inline-flex; background: #f0f0f0; border-radius: 8px; padding: 4px;">
+                        <button id="toggleSweepstake" class="toggle-btn active" onclick="toggleLeaderboard('sweepstake')" 
+                                style="padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: #006747; color: white; transition: all 0.3s;">
+                            Sweepstake Standings
+                        </button>
+                        <button id="toggleTournament" class="toggle-btn" onclick="toggleLeaderboard('tournament')" 
+                                style="padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; background: transparent; color: #333; transition: all 0.3s;">
+                            Masters Leaderboard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sweepstake Leaderboard -->
+                <div id="sweepstakeLeaderboard">
+                    <h3 style="text-align: center; color: #006747; margin-bottom: 20px;">Team Standings</h3>
+                    <div id="teamStandings"></div>
+                </div>
+
+                <!-- Tournament Leaderboard -->
+                <div id="tournamentLeaderboard" style="display: none;">
+                    <h3 style="text-align: center; color: #006747; margin-bottom: 20px;">Official Masters Leaderboard</h3>
+                    <div id="mastersLeaderboard"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULTS TAB -->
+        <section id="resultsTab" class="tab-content">
+            <div class="content">
+                <h2 class="section-title">Tournament Results</h2>
+                
+                <div id="winnerSection"></div>
+                
+                <div class="results-section">
+                    <h3>Final Standings</h3>
+                    <div id="finalStandings"></div>
+                </div>
+
+                <div class="results-section">
+                    <h3>Tournament Statistics</h3>
+                    <div id="tournamentStats" class="stats-grid"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="email-config.js"></script>
+    <script src="data.js"></script>
+    <script src="formGuide.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

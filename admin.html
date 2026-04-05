@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Masters 2026</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: 'Lato', sans-serif;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #006747, #004d35);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .admin-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .admin-section h2 {
+            color: #006747;
+            margin-top: 0;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #006747;
+            font-size: 1.3em;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .admin-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary { background: #006747; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .btn-danger { background: #dc3545; }
+        .btn-info { background: #17a2b8; }
+        .btn-success { background: #28a745; }
+        
+        .status-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        
+        .status-good {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #006747;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .back-link a {
+            color: #006747;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>Admin Control Panel</h1>
+        <p>Masters Tournament 2026 - Sweepstake Management</p>
+    </div>
+
+    <div class="container" style="max-width: 1200px;">
+        
+        <!-- Quick Stats -->
+        <div class="admin-section">
+            <h2>System Status</h2>
+            <div id="quickStats" class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">--</div>
+                    <div class="stat-label">Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">--</div>
+                    <div class="stat-label">Teams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">--</div>
+                    <div class="stat-label">Status</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Management -->
+        <div class="admin-section">
+            <h2>Score Management</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Import scores from CSV: PlayerName, Score, MissedCut (true/false)
+            </p>
+            
+            <textarea id="csvInput" rows="8" placeholder="Rory McIlroy, -11, false
+Justin Rose, -11, false
+Tiger Woods, 2, true"></textarea>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-primary" onclick="importCSV()">Import Scores</button>
+                <button class="admin-btn btn-info" onclick="clearCSVInput()">Clear Input</button>
+            </div>
+            
+            <div id="csvStatus" class="status-box" style="display: none;"></div>
+        </div>
+
+        <!-- Participant Management -->
+        <div class="admin-section">
+            <h2>Participant Management</h2>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-success" onclick="addTestParticipants()">Add 6 Test Participants</button>
+                <button class="admin-btn btn-warning" onclick="forceOpenSignup()">Force Open Signup</button>
+                <button class="admin-btn btn-danger" onclick="clearParticipants()">Clear All Participants</button>
+            </div>
+            
+            <div id="participantStatus" class="status-box" style="display: none;"></div>
+        </div>
+
+        <!-- Draft Controls -->
+        <div class="admin-section">
+            <h2>Draft Controls</h2>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-success" onclick="closeDraftSignup()">Close Signup</button>
+                <button class="admin-btn btn-success" onclick="startSnakeDraft()">Start Draft</button>
+                <button class="admin-btn btn-primary" onclick="viewDraftStatus()">View Draft Status</button>
+                <button class="admin-btn btn-warning" onclick="forceNextPick()">Force Next Pick</button>
+                <button class="admin-btn btn-warning" onclick="autoPickNow()">Auto-Pick Now</button>
+            </div>
+            
+            <div id="draftStatus" class="status-box" style="display: none;"></div>
+        </div>
+
+        <!-- Tournament Controls -->
+        <div class="admin-section">
+            <h2>Tournament Controls</h2>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-success" onclick="concludeTournament()">Conclude Tournament</button>
+                <button class="admin-btn btn-info" onclick="reopenTournament()">Reopen Tournament</button>
+            </div>
+            
+            <div id="tournamentStatus" class="status-box" style="display: none;"></div>
+        </div>
+
+        <!-- Reset Options -->
+        <div class="admin-section">
+            <h2>Reset Options</h2>
+            <p style="color: #dc3545; margin-bottom: 15px;">
+                <strong>WARNING:</strong> These actions cannot be undone!
+            </p>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-warning" onclick="resetSignupOnly()">Reset Signup Only</button>
+                <button class="admin-btn btn-warning" onclick="resetDraftOnly()">Reset Draft Only</button>
+                <button class="admin-btn btn-danger" onclick="resetEverything()">Reset Everything</button>
+            </div>
+            
+            <div id="resetStatus" class="status-box" style="display: none;"></div>
+        </div>
+
+        <!-- Diagnostic Tools -->
+        <div class="admin-section">
+            <h2>Diagnostic Tools</h2>
+            
+            <div class="button-grid">
+                <button class="admin-btn btn-info" onclick="runDiagnostics()">Run Diagnostics</button>
+                <button class="admin-btn btn-info" onclick="viewAllData()">View All Data</button>
+                <button class="admin-btn btn-success" onclick="exportBackup()">Export Backup</button>
+                <button class="admin-btn btn-primary" onclick="createTestDraft()">Create Test Draft</button>
+            </div>
+            
+            <div id="diagnosticOutput" class="status-box" style="display: none;"></div>
+        </div>
+
+    </div>
+
+    <div class="back-link">
+        <a href="index.html">Back to Main Site</a>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="email-config.js"></script>
+    <script src="data.js"></script>
+    <script src="formGuide.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // ADMIN PANEL FUNCTIONS - CLEAN AND SIMPLE
+        
+        function showStatus(elementId, message, type = 'good') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `status-box status-${type}`;
+            element.innerHTML = message;
+        }
+        
+        // QUICK STATS
+        function updateQuickStats() {
+            const participants = JSON.parse(localStorage.getItem(CONFIG.storageKeys.participants) || '[]');
+            const teams = JSON.parse(localStorage.getItem(CONFIG.storageKeys.teams) || '[]');
+            const draftComplete = localStorage.getItem(CONFIG.storageKeys.draftComplete) === 'true';
+            const signupClosed = localStorage.getItem(CONFIG.storageKeys.signupClosed) === 'true';
+            const draftInProgress = localStorage.getItem(CONFIG.storageKeys.draftInProgress) === 'true';
+            
+            const statusText = draftComplete ? 'Complete' : 
+                              draftInProgress ? 'In Progress' : 
+                              signupClosed ? 'Signup Closed' : 'Open';
+            
+            document.getElementById('quickStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${participants.length}</div>
+                    <div class="stat-label">Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${teams.length}</div>
+                    <div class="stat-label">Teams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="font-size: 1.5em;">${statusText}</div>
+                    <div class="stat-label">Status</div>
+                </div>
+            `;
+        }
+        
+        // SCORE IMPORT
+        async function importCSV() {
+            const csv = document.getElementById('csvInput').value.trim();
+            if (!csv) {
+                showStatus('csvStatus', 'Please paste CSV data first', 'warning');
+                return;
+            }
+            
+            if (typeof importScoresFromCSV === 'function') {
+                try {
+                    importScoresFromCSV();
+                    showStatus('csvStatus', '[OK] Scores imported successfully!', 'good');
+                } catch (e) {
+                    showStatus('csvStatus', 'Error importing scores: ' + e.message, 'error');
+                }
+            } else {
+                showStatus('csvStatus', 'Import function not available', 'error');
+            }
+        }
+        
+        function clearCSVInput() {
+            document.getElementById('csvInput').value = '';
+            showStatus('csvStatus', 'Input cleared', 'good');
+        }
+        
+        // PARTICIPANT MANAGEMENT
+        async function addTestParticipants() {
+            const signupClosed = localStorage.getItem(CONFIG.storageKeys.signupClosed) === 'true';
+            if (signupClosed) {
+                if (!confirm('Signup is closed. Open it first?')) return;
+                await forceOpenSignup();
+            }
+            
+            const testParticipants = [
+                { id: Date.now() + 1, name: 'Alice Johnson', email: 'alice@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 2, name: 'Bob Smith', email: 'bob@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 3, name: 'Charlie Brown', email: 'charlie@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 4, name: 'Diana Prince', email: 'diana@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 5, name: 'Eve Davis', email: 'eve@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 6, name: 'Frank Miller', email: 'frank@test.com', joinedAt: new Date().toISOString() }
+            ];
+            
+            localStorage.setItem(CONFIG.storageKeys.participants, JSON.stringify(testParticipants));
+            
+            // Save to Firebase if available
+            if (typeof saveData === 'function') {
+                await saveData('participants', testParticipants);
+            }
+            
+            showStatus('participantStatus', '[OK] Added 6 test participants! Refresh main site to see them.', 'good');
+            updateQuickStats();
+        }
+        
+        async function forceOpenSignup() {
+            localStorage.setItem(CONFIG.storageKeys.signupClosed, 'false');
+            localStorage.removeItem(CONFIG.storageKeys.draftOrder);
+            
+            if (typeof saveData === 'function' && typeof deleteData === 'function') {
+                await saveData('signupClosed', false);
+                await deleteData('draftOrder');
+            }
+            
+            showStatus('participantStatus', '[OK] Signup is now OPEN. Refresh main site.', 'good');
+            updateQuickStats();
+        }
+        
+        async function clearParticipants() {
+            if (!confirm('Clear all participants? This cannot be undone!')) return;
+            
+            localStorage.removeItem(CONFIG.storageKeys.participants);
+            localStorage.removeItem(CONFIG.storageKeys.participantEmails);
+            localStorage.setItem(CONFIG.storageKeys.signupClosed, 'false');
+            
+            if (typeof deleteData === 'function' && typeof saveData === 'function') {
+                await deleteData('participants');
+                await deleteData('participantEmails');
+                await saveData('signupClosed', false);
+            }
+            
+            showStatus('participantStatus', '[OK] All participants cleared. Refresh main site.', 'good');
+            updateQuickStats();
+        }
+        
+        // DRAFT CONTROLS
+        function viewDraftStatus() {
+            const draftedPlayers = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftedPlayers) || '[]');
+            const draftOrder = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftOrder) || '[]');
+            const draftInProgress = localStorage.getItem(CONFIG.storageKeys.draftInProgress) === 'true';
+            const currentPickStartTime = localStorage.getItem(CONFIG.storageKeys.currentPickStartTime);
+            
+            let timeInfo = 'N/A';
+            if (currentPickStartTime && draftInProgress) {
+                const elapsed = Math.floor((Date.now() - parseInt(currentPickStartTime)) / 1000);
+                const remaining = Math.max(0, (12 * 60 * 60) - elapsed);
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                timeInfo = `${hours}h ${minutes}m remaining`;
+            }
+            
+            const recentPicks = draftedPlayers.slice(-5).reverse()
+                .map(p => `${p.participantName} -> ${p.golferName}`)
+                .join('<br>') || 'No picks yet';
+            
+            showStatus('draftStatus', `
+                <strong>Draft Status</strong><br><br>
+                In Progress: ${draftInProgress ? 'Yes' : 'No'}<br>
+                Participants: ${draftOrder.length}<br>
+                Picks Made: ${draftedPlayers.length}<br>
+                Time: ${timeInfo}<br><br>
+                <strong>Recent Picks:</strong><br>${recentPicks}
+            `, 'good');
+        }
+        
+        async function forceNextPick() {
+            if (!confirm('Force advance to next pick? This will reset the timer.')) return;
+            
+            // Remove current pick start time to reset timer
+            localStorage.removeItem(CONFIG.storageKeys.currentPickStartTime);
+            
+            // Also sync to Firebase
+            if (typeof deleteData === 'function') {
+                await deleteData('currentPickStartTime');
+            }
+            
+            showStatus('draftStatus', '[OK] Timer reset. Next picker can now select. Refresh main site.', 'good');
+        }
+        
+        async function autoPickNow() {
+            if (!confirm('Make an automatic pick for the current player?')) return;
+            
+            // Check if autoPickForTimeout function exists
+            if (typeof autoPickForTimeout === 'function') {
+                try {
+                    autoPickForTimeout();
+                    showStatus('draftStatus', '[OK] Auto-pick executed. Refresh main site to see result.', 'good');
+                } catch (e) {
+                    showStatus('draftStatus', 'Error during auto-pick: ' + e.message, 'error');
+                }
+            } else {
+                showStatus('draftStatus', 'Auto-pick function not available. Ensure draft is in progress.', 'error');
+            }
+        }
+        
+        // TOURNAMENT CONTROLS
+        async function concludeTournament() {
+            if (!confirm('Conclude the tournament? This will show the Results tab.')) return;
+            
+            localStorage.setItem(CONFIG.storageKeys.tournamentConcluded, 'true');
+            
+            if (typeof saveData === 'function') {
+                await saveData('tournamentConcluded', true);
+            }
+            
+            showStatus('tournamentStatus', '[OK] Tournament concluded! Results tab is now visible. Refresh main site.', 'good');
+        }
+        
+        async function reopenTournament() {
+            if (!confirm('Reopen the tournament? This will hide the Results tab.')) return;
+            
+            localStorage.removeItem(CONFIG.storageKeys.tournamentConcluded);
+            
+            if (typeof deleteData === 'function') {
+                await deleteData('tournamentConcluded');
+            }
+            
+            showStatus('tournamentStatus', '[OK] Tournament reopened. Results tab hidden. Refresh main site.', 'good');
+        }
+        
+        // RESET FUNCTIONS
+        async function resetSignupOnly() {
+            if (!confirm('Reset signup? This will reopen signup and clear draft order.')) return;
+            
+            localStorage.setItem(CONFIG.storageKeys.signupClosed, 'false');
+            localStorage.removeItem(CONFIG.storageKeys.draftOrder);
+            
+            if (typeof saveData === 'function' && typeof deleteData === 'function') {
+                await saveData('signupClosed', false);
+                await deleteData('draftOrder');
+            }
+            
+            showStatus('resetStatus', '[OK] Signup reopened. Refresh main site.', 'good');
+            updateQuickStats();
+        }
+        
+        async function resetDraftOnly() {
+            if (!confirm('Reset draft only? Participants will be kept.')) return;
+            
+            const keysToRemove = ['teams', 'draftComplete', 'draftInProgress', 'snakeDraftComplete',
+                                 'autoPickComplete', 'draftedPlayers', 'draftOrder', 'currentPickStartTime'];
+            
+            keysToRemove.forEach(key => localStorage.removeItem(CONFIG.storageKeys[key]));
+            
+            if (typeof deleteData === 'function') {
+                for (const key of keysToRemove) {
+                    await deleteData(key);
+                }
+            }
+            
+            showStatus('resetStatus', '[OK] Draft reset. Participants preserved. Refresh main site.', 'good');
+            updateQuickStats();
+        }
+        
+        async function resetEverything() {
+            if (!confirm('RESET EVERYTHING? This deletes ALL data!')) return;
+            if (!confirm('Are you ABSOLUTELY SURE? Cannot be undone!')) return;
+            
+            // Clear all localStorage
+            for (let key in CONFIG.storageKeys) {
+                localStorage.removeItem(CONFIG.storageKeys[key]);
+            }
+            
+            // Clear Firebase
+            if (typeof deleteData === 'function') {
+                const paths = ['participants', 'teams', 'draftComplete', 'signupClosed', 
+                              'draftOrder', 'draftedPlayers', 'snakeDraftComplete', 
+                              'draftInProgress', 'currentPickStartTime', 'autoPickComplete', 
+                              'playerScores', 'participantEmails', 'tournamentConcluded'];
+                
+                for (const path of paths) {
+                    try {
+                        await deleteData(path);
+                    } catch (e) {
+                        console.error('Error deleting:', path, e);
+                    }
+                }
+            }
+            
+            showStatus('resetStatus', '[OK] Everything reset! Refresh this page and main site.', 'good');
+            setTimeout(() => location.reload(), 2000);
+        }
+        
+        // DIAGNOSTICS
+        function runDiagnostics() {
+            const participants = JSON.parse(localStorage.getItem(CONFIG.storageKeys.participants) || '[]');
+            const teams = JSON.parse(localStorage.getItem(CONFIG.storageKeys.teams) || '[]');
+            const draftComplete = localStorage.getItem(CONFIG.storageKeys.draftComplete) === 'true';
+            const signupClosed = localStorage.getItem(CONFIG.storageKeys.signupClosed) === 'true';
+            const draftInProgress = localStorage.getItem(CONFIG.storageKeys.draftInProgress) === 'true';
+            const draftedPlayers = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftedPlayers) || '[]');
+            
+            let issues = [];
+            
+            if (signupClosed && participants.length === 0) {
+                issues.push('WARNING: Signup closed with no participants');
+            }
+            if (draftComplete && teams.length === 0) {
+                issues.push('WARNING: Draft complete with no teams');
+            }
+            if (draftInProgress && participants.length === 0) {
+                issues.push('WARNING: Draft in progress with no participants');
+            }
+            
+            if (issues.length === 0) {
+                issues.push('[OK] No issues detected');
+            }
+            
+            showStatus('diagnosticOutput', `
+                <strong>System Diagnostic</strong><br><br>
+                Participants: ${participants.length}<br>
+                Teams: ${teams.length}<br>
+                Draft Complete: ${draftComplete ? 'Yes' : 'No'}<br>
+                Signup Closed: ${signupClosed ? 'Yes' : 'No'}<br>
+                Draft In Progress: ${draftInProgress ? 'Yes' : 'No'}<br>
+                Players Drafted: ${draftedPlayers.length}<br><br>
+                <strong>Issues:</strong><br>${issues.join('<br>')}
+            `, issues.length > 1 ? 'warning' : 'good');
+        }
+        
+        function viewAllData() {
+            const allData = {};
+            for (let key in CONFIG.storageKeys) {
+                allData[key] = localStorage.getItem(CONFIG.storageKeys[key]);
+            }
+            
+            showStatus('diagnosticOutput', 
+                '<strong>All Data:</strong><br><br><pre style="max-height: 400px; overflow: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">' + 
+                JSON.stringify(allData, null, 2) + 
+                '</pre>', 
+                'good');
+        }
+        
+        function exportBackup() {
+            const allData = {};
+            for (let key in CONFIG.storageKeys) {
+                const value = localStorage.getItem(CONFIG.storageKeys[key]);
+                try {
+                    allData[key] = JSON.parse(value);
+                } catch {
+                    allData[key] = value;
+                }
+            }
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `masters2026-backup-${Date.now()}.json`;
+            link.click();
+            
+            showStatus('diagnosticOutput', '[OK] Backup downloaded!', 'good');
+        }
+        
+        async function createTestDraft() {
+            if (!confirm('Create a complete test draft with 6 teams?')) return;
+            
+            // Reset everything first
+            for (let key in CONFIG.storageKeys) {
+                localStorage.removeItem(CONFIG.storageKeys[key]);
+            }
+            
+            // Create test participants
+            const testParticipants = [
+                { id: Date.now() + 1, name: 'Alice Johnson', email: 'alice@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 2, name: 'Bob Smith', email: 'bob@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 3, name: 'Charlie Brown', email: 'charlie@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 4, name: 'Diana Prince', email: 'diana@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 5, name: 'Eve Davis', email: 'eve@test.com', joinedAt: new Date().toISOString() },
+                { id: Date.now() + 6, name: 'Frank Miller', email: 'frank@test.com', joinedAt: new Date().toISOString() }
+            ];
+            
+            // Get top 12 golfers for manual picks
+            const topGolfers = golfers.slice(0, 12);
+            
+            // Create teams with snake draft picks
+            const testTeams = testParticipants.map((p, idx) => ({
+                participantId: p.id,
+                participantName: p.name,
+                participantEmail: p.email,
+                players: [
+                    topGolfers[idx],           // Round 1 pick
+                    topGolfers[11 - idx]       // Round 2 pick (snake)
+                ]
+            }));
+            
+            // Distribute remaining golfers evenly
+            const remainingGolfers = golfers.slice(12);
+            remainingGolfers.forEach((golfer, idx) => {
+                const teamIdx = idx % 6;
+                testTeams[teamIdx].players.push(golfer);
+            });
+            
+            // Save everything
+            localStorage.setItem(CONFIG.storageKeys.participants, JSON.stringify(testParticipants));
+            localStorage.setItem(CONFIG.storageKeys.teams, JSON.stringify(testTeams));
+            localStorage.setItem(CONFIG.storageKeys.draftComplete, 'true');
+            localStorage.setItem(CONFIG.storageKeys.signupClosed, 'true');
+            localStorage.setItem(CONFIG.storageKeys.snakeDraftComplete, 'true');
+            localStorage.setItem(CONFIG.storageKeys.autoPickComplete, 'true');
+            
+            // Save to Firebase
+            if (typeof saveData === 'function') {
+                await saveData('participants', testParticipants);
+                await saveData('teams', testTeams);
+                await saveData('draftComplete', true);
+                await saveData('signupClosed', true);
+                await saveData('snakeDraftComplete', true);
+                await saveData('autoPickComplete', true);
+            }
+            
+            showStatus('diagnosticOutput', '[OK] Test draft created! 6 teams with full rosters. Refresh main site to see Teams and Leaderboard tabs.', 'good');
+            updateQuickStats();
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateQuickStats();
+            setInterval(updateQuickStats, 5000); // Update every 5 seconds
+        });
+    </script>
+</body>
+</html>
