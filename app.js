@@ -2705,33 +2705,29 @@ function renderFormGuide(data) {
     const formGuideDisplay = document.getElementById('formGuideDisplay');
 
     if (data.length === 0) {
-        formGuideDisplay.innerHTML = `
-            <div class="alert alert-info">
-                <p>No golfers match your filters</p>
-            </div>
-        `;
+        formGuideDisplay.innerHTML = `<div class="alert alert-info"><p>No golfers match your filters</p></div>`;
         return;
     }
 
     let html = `
-        <div style="margin-bottom: 10px; font-size: 0.85em; color: #666;">
+        <div style="margin-bottom:10px;font-size:0.85em;color:#666;">
             Showing ${data.length} player${data.length !== 1 ? 's' : ''} — click any row to expand full details
         </div>
-        <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.92em;">
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.92em;">
             <thead>
-                <tr style="background: var(--augusta-green); color: white; text-align: left;">
-                    <th style="padding: 10px 8px;">Player</th>
-                    <th style="padding: 10px 8px; text-align: center;">Rank</th>
-                    <th style="padding: 10px 8px; text-align: center;">Tier</th>
-                    <th style="padding: 10px 8px; text-align: center;">Form</th>
-                    <th style="padding: 10px 8px; text-align: center;">2025 Masters</th>
-                    <th style="padding: 10px 8px; text-align: center;">2026 Wins</th>
-                    <th style="padding: 10px 8px; text-align: center;">SG Total</th>
-                    <th style="padding: 10px 8px; text-align: center;">Augusta Best</th>
+                <tr style="background:var(--augusta-green);color:white;text-align:left;">
+                    <th style="padding:10px 8px;">Player</th>
+                    <th style="padding:10px 8px;text-align:center;">Rank</th>
+                    <th style="padding:10px 8px;text-align:center;">Tier</th>
+                    <th style="padding:10px 8px;text-align:center;">Form</th>
+                    <th style="padding:10px 8px;text-align:center;">2025 Masters</th>
+                    <th style="padding:10px 8px;text-align:center;">2026 Wins</th>
+                    <th style="padding:10px 8px;text-align:center;">SG Total</th>
+                    <th style="padding:10px 8px;text-align:center;">Augusta Best</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="formGuideTableBody">
     `;
 
     data.forEach((golfer, i) => {
@@ -2742,9 +2738,9 @@ function renderFormGuide(data) {
             : (golfer.masters2025?.madeCut === false ? 'MC' : 'N/A');
         const sgTotal = golfer.strokesGained?.total;
         const sgDisplay = sgTotal != null ? (sgTotal >= 0 ? '+' : '') + sgTotal.toFixed(2) : 'N/A';
-        const sgColor = sgTotal > 0 ? '#28a745' : '#dc3545';
+        const sgColor = sgTotal != null && sgTotal > 0 ? '#28a745' : '#dc3545';
         const bestFinish = golfer.augustaHistory?.bestFinish;
-        const bestFinishDisplay = bestFinish === 1 ? 'Champion' : bestFinish ? `T-${bestFinish}` : 'Debut';
+        const bestFinishDisplay = bestFinish === 1 ? '🏆 Champion' : bestFinish ? `T-${bestFinish}` : 'Debut';
         const rowBg = i % 2 === 0 ? '#fff' : '#f8f9fa';
 
         const fieldPlayer = typeof masters2026Field !== 'undefined'
@@ -2753,28 +2749,25 @@ function renderFormGuide(data) {
         const tier = fieldPlayer ? fieldPlayer.tier : '-';
 
         html += `
-            <tr onclick="toggleFormRow('${golfer.golferId}')"
-                style="background: ${rowBg}; cursor: pointer; border-bottom: 1px solid #e0e0e0;"
+            <tr data-golfer-id="${golfer.golferId}"
+                onclick="toggleFormRow('${golfer.golferId}', '${rowBg}')"
+                style="background:${rowBg};cursor:pointer;border-bottom:1px solid #e0e0e0;"
                 onmouseover="this.style.background='#e8f5e9'"
-                onmouseout="this.style.background='${rowBg}'">
-                <td style="padding: 10px 8px; font-weight: 600; color: var(--augusta-green);">${golfer.name}</td>
-                <td style="padding: 10px 8px; text-align: center;">${golfer.seasonStats?.worldRank || 'N/A'}</td>
-                <td style="padding: 10px 8px; text-align: center;">${tier}</td>
-                <td style="padding: 10px 8px; text-align: center;">
-                    <span style="background: ${formColor}; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 0.9em;">
-                        ${formRating.toFixed(1)}
-                    </span>
+                onmouseout="this.style.background=this.dataset.open==='1'?'#f0f7f0':'${rowBg}'">
+                <td style="padding:10px 8px;font-weight:600;color:var(--augusta-green);">${golfer.name}</td>
+                <td style="padding:10px 8px;text-align:center;">${golfer.seasonStats?.worldRank || 'N/A'}</td>
+                <td style="padding:10px 8px;text-align:center;">${tier}</td>
+                <td style="padding:10px 8px;text-align:center;">
+                    <span style="background:${formColor};color:white;padding:2px 8px;border-radius:12px;font-weight:bold;font-size:0.9em;">${formRating.toFixed(1)}</span>
                 </td>
-                <td style="padding: 10px 8px; text-align: center;">${masters2025Pos}</td>
-                <td style="padding: 10px 8px; text-align: center;">${golfer.seasonStats?.wins ?? 0}</td>
-                <td style="padding: 10px 8px; text-align: center; color: ${sgColor}; font-weight: 600;">${sgDisplay}</td>
-                <td style="padding: 10px 8px; text-align: center;">${bestFinishDisplay}</td>
+                <td style="padding:10px 8px;text-align:center;">${masters2025Pos}</td>
+                <td style="padding:10px 8px;text-align:center;">${golfer.seasonStats?.wins ?? 0}</td>
+                <td style="padding:10px 8px;text-align:center;color:${sgColor};font-weight:600;">${sgDisplay}</td>
+                <td style="padding:10px 8px;text-align:center;">${bestFinishDisplay}</td>
             </tr>
-            <tr id="formDetails-${golfer.golferId}" style="display: none; background: #f0f7f0;">
-                <td colspan="8" style="padding: 0;">
-                    <div style="padding: 20px;">
-                        ${renderFormDetails(golfer)}
-                    </div>
+            <tr id="formDetails-${golfer.golferId}" style="display:none;background:#f0f7f0;">
+                <td colspan="8" style="padding:0;">
+                    <div id="formDetailsContent-${golfer.golferId}" style="padding:20px;"></div>
                 </td>
             </tr>
         `;
@@ -2784,13 +2777,28 @@ function renderFormGuide(data) {
     formGuideDisplay.innerHTML = html;
 }
 
-function toggleFormRow(golferId) {
-    const details = document.getElementById(`formDetails-${golferId}`);
-    if (!details) return;
-    if (details.style.display === 'none') {
-        details.style.display = 'table-row';
+function toggleFormRow(golferId, rowBg) {
+    const detailRow = document.getElementById('formDetails-' + golferId);
+    const contentDiv = document.getElementById('formDetailsContent-' + golferId);
+    const headerRow = document.querySelector('[data-golfer-id="' + golferId + '"]');
+    if (!detailRow || !contentDiv) return;
+
+    const isOpen = detailRow.style.display !== 'none';
+
+    if (isOpen) {
+        detailRow.style.display = 'none';
+        if (headerRow) { headerRow.dataset.open = '0'; }
     } else {
-        details.style.display = 'none';
+        // Lazy-render details only when first opened
+        if (!contentDiv.dataset.rendered) {
+            const golfer = formGuideData.find(g => String(g.golferId) === String(golferId));
+            if (golfer) {
+                contentDiv.innerHTML = renderFormDetails(golfer);
+                contentDiv.dataset.rendered = '1';
+            }
+        }
+        detailRow.style.display = 'table-row';
+        if (headerRow) { headerRow.dataset.open = '1'; }
     }
 }
 
@@ -3392,3 +3400,4 @@ function toggleTeamRoster(rosterId) {
         details.style.display = details.style.display === 'none' ? 'block' : 'none';
     }
 }
+
