@@ -1063,6 +1063,24 @@ function renderLiveDraft() {
         const seconds = timeRemaining % 60;
         timeDisplay = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
+
+    // SMART RE-RENDER: If the draft UI is already built for the same picker,
+    // only update the parts that change (timer + draft board) to preserve
+    // the search input value and scroll position
+    const existingPicker = liveDraftSection.getAttribute('data-current-picker');
+    const existingPickNum = liveDraftSection.getAttribute('data-pick-num');
+    if (existingPicker === currentPicker.id && existingPickNum === String(currentPick)) {
+        // Just update timer
+        const timerEl = document.getElementById('pickTimerDisplay');
+        if (timerEl) timerEl.textContent = '\u23f0 ' + timeDisplay;
+        // Just update draft board
+        const boardEl = document.getElementById('draftBoardContainer');
+        if (boardEl) boardEl.innerHTML = renderDraftBoard();
+        return;
+    }
+    // Full rebuild needed (new picker or first render) - store marker attributes
+    liveDraftSection.setAttribute('data-current-picker', currentPicker.id);
+    liveDraftSection.setAttribute('data-pick-num', String(currentPick));
     
     liveDraftSection.innerHTML = `
         <div style="padding: 30px;">
@@ -1117,7 +1135,7 @@ function renderLiveDraft() {
                 <!-- Draft Board -->
                 <div>
                     <h3 style="margin-bottom: 15px; color: var(--augusta-green);">Draft Board</h3>
-                    <div style="max-height: 600px; overflow-y: auto;">
+                    <div id="draftBoardContainer" style="max-height: 600px; overflow-y: auto;">
                         ${renderDraftBoard()}
                     </div>
                 </div>
