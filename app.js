@@ -1433,6 +1433,9 @@ async function adminSeedDraft() {
     draftComplete = false;
     teams = [];
 
+    // Ensure golfers are initialized before searching
+    if (!golfers || golfers.length === 0) initializeGolfers();
+
     const scheffler = golfers.find(g => g.name === 'Scottie Scheffler');
     const mcilroy = golfers.find(g => g.name === 'Rory McIlroy');
 
