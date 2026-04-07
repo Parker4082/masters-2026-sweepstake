@@ -1421,7 +1421,6 @@ async function adminSeedDraft() {
         const existing = participants.find(p => p.name.toLowerCase().trim() === op.name.toLowerCase().trim());
         if (existing && existing.email) {
             op.email = existing.email;
-            op.id = existing.id;
         }
     });
 
