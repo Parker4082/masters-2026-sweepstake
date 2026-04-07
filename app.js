@@ -24,6 +24,7 @@ const CONFIG = {
         lastSyncTime: 'masters2026_lastSyncTime',
         participantEmails: 'masters2026_participantEmails',
         currentPickStartTime: 'masters2026_currentPickStartTime',
+        currentPickIndex: 'masters2026_currentPickIndex',
         autoPickComplete: 'masters2026_autoPickComplete',
         tournamentConcluded: 'masters2026_tournamentConcluded'
     }
@@ -377,6 +378,7 @@ async function saveToStorage() {
         await saveData('draftedPlayers', draftedPlayers);
         await saveData('snakeDraftComplete', snakeDraftComplete);
         await saveData('draftInProgress', draftInProgress);
+        await saveData('currentPickIndex', currentPick);
         
         console.log('âœ… Data saved successfully');
         return true;
@@ -398,6 +400,7 @@ async function loadFromStorage() {
         const drafted = await loadData('draftedPlayers');
         const snakeComplete = await loadData('snakeDraftComplete');
         const draftProg = await loadData('draftInProgress');
+        const savedPickIndex = await loadData('currentPickIndex');
         
         if (p) participants = p;
         if (t) teams = t;
@@ -407,6 +410,13 @@ async function loadFromStorage() {
         if (drafted) draftedPlayers = drafted;
         if (snakeComplete) snakeDraftComplete = snakeComplete;
         if (draftProg) draftInProgress = draftProg;
+        // CRITICAL FIX: Restore currentPick from storage so draft doesn't reset to pick 0 on reload
+        if (savedPickIndex !== null && savedPickIndex !== undefined) {
+            currentPick = savedPickIndex;
+        } else if (draftedPlayers && draftedPlayers.length > 0) {
+            // Fallback: derive currentPick from number of drafted players
+            currentPick = draftedPlayers.length;
+        }
         
         // AUTO-FIX: Check for invalid states and fix them
         let needsFix = false;
@@ -1384,6 +1394,86 @@ function startSnakeDraft() {
     if (typeof sendPickNotification === 'function') {
         sendPickNotification(firstPicker, 1, totalPicks, 12);
     }
+}
+
+// ===== ADMIN: SEED DRAFT WITH CORRECT STATE =====
+async function adminSeedDraft() {
+    if (!confirm('RESET & SEED DRAFT?\n\nThis will:\n- Set draft order: Jack Hobbs, Nick Barker, James Parker, Callum Watling, Tom Jackson, Josh Platt, Joe Day, Harry Wetherald, Joe Johnson\n- Pre-assign: Jack Hobbs = Scottie Scheffler, Nick Barker = Rory McIlroy\n- Set it as James Parker\'s pick\n\nAll existing draft data will be cleared!')) {
+        return;
+    }
+
+    console.log('=== SEEDING DRAFT STATE ===');
+
+    const orderedParticipants = [
+        { id: 'p1', name: 'Jack Hobbs',      email: '' },
+        { id: 'p2', name: 'Nick Barker',     email: '' },
+        { id: 'p3', name: 'James Parker',    email: '' },
+        { id: 'p4', name: 'Callum Watling',  email: '' },
+        { id: 'p5', name: 'Tom Jackson',     email: '' },
+        { id: 'p6', name: 'Josh Platt',      email: '' },
+        { id: 'p7', name: 'Joe Day',         email: '' },
+        { id: 'p8', name: 'Harry Wetherald', email: '' },
+        { id: 'p9', name: 'Joe Johnson',     email: '' },
+    ];
+
+    // Preserve any existing emails
+    orderedParticipants.forEach(op => {
+        const existing = participants.find(p => p.name.toLowerCase().trim() === op.name.toLowerCase().trim());
+        if (existing && existing.email) {
+            op.email = existing.email;
+            op.id = existing.id;
+        }
+    });
+
+    participants = orderedParticipants;
+    draftOrder = orderedParticipants;
+    signupClosed = true;
+    draftInProgress = true;
+    snakeDraftComplete = false;
+    draftComplete = false;
+    teams = [];
+
+    const scheffler = golfers.find(g => g.name === 'Scottie Scheffler');
+    const mcilroy = golfers.find(g => g.name === 'Rory McIlroy');
+
+    if (!scheffler || !mcilroy) {
+        alert('Error: Could not find Scottie Scheffler or Rory McIlroy in golfer list.');
+        return;
+    }
+
+    draftedPlayers = [
+        {
+            participantId: orderedParticipants[0].id,
+            participantName: 'Jack Hobbs',
+            golferId: scheffler.id,
+            golferName: scheffler.name,
+            pickNumber: 1,
+            round: 1,
+            timestamp: new Date().toISOString()
+        },
+        {
+            participantId: orderedParticipants[1].id,
+            participantName: 'Nick Barker',
+            golferId: mcilroy.id,
+            golferName: mcilroy.name,
+            pickNumber: 2,
+            round: 1,
+            timestamp: new Date().toISOString()
+        }
+    ];
+
+    // currentPick = 2 => index 2 = James Parker's turn (pick #3)
+    currentPick = 2;
+
+    localStorage.setItem(CONFIG.storageKeys.currentPickStartTime, Date.now().toString());
+
+    console.log('Draft seeded. currentPick =', currentPick, '=> James Parker turn');
+
+    await saveToStorage();
+    updateAllViews();
+
+    alert('Draft Reset & Seeded!\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n\nIt is now James Parker\'s pick (Pick 3 of 18).\n\nGo to the Draft tab!');
+    switchTab('draft');
 }
 
 // Temporary function for testing
