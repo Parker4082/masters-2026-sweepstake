@@ -1,6 +1,6 @@
 /* ============================================
    MASTERS TOURNAMENT 2026 - GOLFER DATA
-   Data source: Official 2026 Masters field (91 players)
+   Data source: Official 2026 Masters field (91 players confirmed)
    Updated: April 2026
    ============================================ */
 
@@ -54,7 +54,6 @@ const masters2026Field = [
     { name: "Harry Hall", score: 0, rank: 38, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Sungjae Im", score: 0, rank: 39, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Kurt Kitayama", score: 0, rank: 40, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
-    { name: "Tommy Aaron", score: 0, rank: 41, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Si Woo Kim", score: 0, rank: 42, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Brooks Koepka", score: 0, rank: 43, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Cameron Smith", score: 0, rank: 44, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
@@ -81,30 +80,37 @@ const masters2026Field = [
     { name: "Li Haotong", score: 0, rank: 63, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Marco Penge", score: 0, rank: 64, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Nick Taylor", score: 0, rank: 65, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Sam Stevens", score: 0, rank: 66, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Alex Noren", score: 0, rank: 67, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Davis Riley", score: 0, rank: 68, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Aaron Rai", score: 0, rank: 69, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
 
     // TIER 5 - Past champions / other invitees
-    { name: "Adam Scott", score: 0, rank: 66, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Sergio García", score: 0, rank: 67, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Bubba Watson", score: 0, rank: 68, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Danny Willett", score: 0, rank: 69, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Charl Schwartzel", score: 0, rank: 70, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Mike Weir", score: 0, rank: 71, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Vijay Singh", score: 0, rank: 72, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "José María Olazábal", score: 0, rank: 73, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Zach Johnson", score: 0, rank: 74, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Fred Couples", score: 0, rank: 75, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Ángel Cabrera", score: 0, rank: 76, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Casey Jarvis", score: 0, rank: 77, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
-    { name: "Naoyuki Kataoka", score: 0, rank: 78, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Adam Scott", score: 0, rank: 70, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Sergio García", score: 0, rank: 71, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Bubba Watson", score: 0, rank: 72, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Danny Willett", score: 0, rank: 73, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Charl Schwartzel", score: 0, rank: 74, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Mike Weir", score: 0, rank: 75, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Vijay Singh", score: 0, rank: 76, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "José María Olazábal", score: 0, rank: 77, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Zach Johnson", score: 0, rank: 78, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Fred Couples", score: 0, rank: 79, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Ángel Cabrera", score: 0, rank: 80, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Casey Jarvis", score: 0, rank: 81, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Naoyuki Kataoka", score: 0, rank: 82, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Rasmus Neergaard-Petersen", score: 0, rank: 83, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Kristoffer Reitan", score: 0, rank: 84, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Sami Välimäki", score: 0, rank: 85, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
+    { name: "Rasmus Højgaard", score: 0, rank: 86, missedCut: false, rounds: [0, 0, 0, 0], tier: 5 },
 
     // TIER 6 - Amateurs
-    { name: "Mason Howell", score: 0, rank: 79, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Jackson Herrington", score: 0, rank: 80, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Ethan Fang", score: 0, rank: 81, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Fifa Laopakdee", score: 0, rank: 82, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Mateo Pulcini", score: 0, rank: 83, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Brandon Holtz", score: 0, rank: 84, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
-    { name: "Michael Brennan (Am)", score: 0, rank: 85, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Mason Howell", score: 0, rank: 87, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Jackson Herrington", score: 0, rank: 88, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Ethan Fang", score: 0, rank: 89, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Fifa Laopakdee", score: 0, rank: 90, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Mateo Pulcini", score: 0, rank: 91, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
+    { name: "Brandon Holtz", score: 0, rank: 92, missedCut: false, rounds: [0, 0, 0, 0], tier: 6 },
 ];
 
 // Export for use in other files (Node.js compatibility)
