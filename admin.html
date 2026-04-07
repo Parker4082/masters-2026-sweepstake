@@ -280,11 +280,32 @@ Tiger Woods, 2, true"></textarea>
     <script src="firebase-config.js"></script>
     <script src="email-config.js"></script>
     <script src="data.js"></script>
-    <script src="formGuide.js"></script>
-    <script src="app.js"></script>
     
     <script>
         // ADMIN PANEL FUNCTIONS - CLEAN AND SIMPLE
+
+        // Minimal CONFIG (app.js not loaded in admin to avoid listener conflicts)
+        const CONFIG = {
+            storageKeys: {
+                participants: 'masters2026_participants',
+                teams: 'masters2026_teams',
+                draftComplete: 'masters2026_draft',
+                playerScores: 'masters2026_scores',
+                signupClosed: 'masters2026_signupClosed',
+                draftOrder: 'masters2026_draftOrder',
+                draftedPlayers: 'masters2026_draftedPlayers',
+                snakeDraftComplete: 'masters2026_snakeDraftComplete',
+                draftInProgress: 'masters2026_draftInProgress',
+                csvUrl: 'masters2026_csvUrl',
+                autoSync: 'masters2026_autoSync',
+                lastSyncTime: 'masters2026_lastSyncTime',
+                participantEmails: 'masters2026_participantEmails',
+                currentPickStartTime: 'masters2026_currentPickStartTime',
+                currentPickIndex: 'masters2026_currentPickIndex',
+                autoPickComplete: 'masters2026_autoPickComplete',
+                tournamentConcluded: 'masters2026_tournamentConcluded'
+            }
+        };
         
         function showStatus(elementId, message, type = 'good') {
             const element = document.getElementById(elementId);
@@ -405,6 +426,14 @@ Tiger Woods, 2, true"></textarea>
         }
         
         // DRAFT CONTROLS
+        // Stubs for functions that were in app.js (removed to prevent listener conflicts)
+        async function closeDraftSignup() {
+            alert('Use the main site to close signup, or use the Reset & Seed Draft button below to set the draft directly.');
+        }
+        async function startSnakeDraft() {
+            alert('Use the main site to start the draft, or use the Reset & Seed Draft button below to set the draft directly.');
+        }
+
         function viewDraftStatus() {
             const draftedPlayers = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftedPlayers) || '[]');
             const draftOrder = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftOrder) || '[]');
