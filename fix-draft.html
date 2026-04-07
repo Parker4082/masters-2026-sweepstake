@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draft Fixer - Masters 2026</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        h1 { color: #ffcc00; }
+        h2 { color: #00ccff; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        button { 
+            background: #006747; color: white; border: none; padding: 12px 24px; 
+            margin: 6px; cursor: pointer; font-size: 1em; border-radius: 4px; 
+        }
+        button:hover { background: #008755; }
+        button.danger { background: #7b1fa2; }
+        button.danger:hover { background: #9c27b0; }
+        button.red { background: #c62828; }
+        button.red:hover { background: #e53935; }
+        #log { 
+            background: #0d0d0d; border: 1px solid #333; padding: 15px; 
+            margin-top: 20px; min-height: 200px; max-height: 500px; 
+            overflow-y: auto; white-space: pre-wrap; font-size: 0.9em;
+        }
+        #firebase-data {
+            background: #0d0d0d; border: 1px solid #444; padding: 15px;
+            margin-top: 10px; max-height: 400px; overflow-y: auto;
+            white-space: pre-wrap; font-size: 0.85em; color: #aaffaa;
+        }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Masters 2026 - Draft Fixer</h1>
+    <p style="color:#aaa">Standalone tool - no app.js loaded, no listeners. Direct Firebase access only.</p>
+
+    <div class="section">
+        <h2>Step 1: Read Current Firebase State</h2>
+        <button onclick="readFirebase()">📖 Read Firebase Now</button>
+        <div id="firebase-data">Click "Read Firebase Now" to see what's actually stored...</div>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: Apply Fix</h2>
+        <p style="color:#ffcc00">This will WIPE draftedPlayers and write the correct state:</p>
+        <ul style="color:#ccc">
+            <li>Pick 1: Jack Hobbs → Scottie Scheffler</li>
+            <li>Pick 2: Nick Barker → Rory McIlroy</li>
+            <li>currentPickIndex = 2 (James Parker's turn)</li>
+            <li>9 participants in correct order</li>
+        </ul>
+        <button class="danger" onclick="applyFix()">🔧 APPLY FIX TO FIREBASE</button>
+        <button class="red" onclick="nukeAndFix()">💣 NUKE ALL DRAFT DATA THEN FIX</button>
+    </div>
+
+    <div class="section">
+        <h2>Log</h2>
+        <div id="log">Ready...\n</div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ---- FIREBASE CONFIG (copied from firebase-config.js) ----
+        const firebaseConfig = {
+            apiKey: "AIzaSyDmq4HnAAHSoqMyRN75TxoiRzvC7Jhkqss",
+            authDomain: "masters-2026-sweepstake.firebaseapp.com",
+            databaseURL: "https://masters-2026-sweepstake-default-rtdb.firebaseio.com",
+            projectId: "masters-2026-sweepstake",
+            storageBucket: "masters-2026-sweepstake.firebasestorage.app",
+            messagingSenderId: "1024936985932",
+            appId: "1:1024936985932:web:f87765cb9f19661f4a3be9"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function log(msg) {
+            const el = document.getElementById('log');
+            el.textContent += '[' + new Date().toLocaleTimeString() + '] ' + msg + '\n';
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function readFirebase() {
+            log('Reading all Firebase data...');
+            try {
+                const snap = await db.ref('/').once('value');
+                const data = snap.val();
+                const el = document.getElementById('firebase-data');
+
+                if (!data) {
+                    el.textContent = 'Firebase is EMPTY (null)';
+                    log('Firebase is empty!');
+                    return;
+                }
+
+                // Show summary
+                let summary = '';
+                summary += 'Keys in Firebase: ' + Object.keys(data).join(', ') + '\n\n';
+
+                if (data.draftedPlayers) {
+                    const picks = Array.isArray(data.draftedPlayers) ? data.draftedPlayers : Object.values(data.draftedPlayers);
+                    summary += 'DRAFTED PLAYERS (' + picks.length + '):\n';
+                    picks.forEach((p, i) => {
+                        summary += '  ' + (i+1) + '. ' + p.participantName + ' -> ' + p.golferName + ' (participantId: ' + p.participantId + ')\n';
+                    });
+                } else {
+                    summary += 'draftedPlayers: NOT SET\n';
+                }
+
+                summary += '\ncurrentPickIndex: ' + (data.currentPickIndex !== undefined ? data.currentPickIndex : 'NOT SET') + '\n';
+                summary += 'draftInProgress: ' + data.draftInProgress + '\n';
+                summary += 'signupClosed: ' + data.signupClosed + '\n';
+
+                if (data.draftOrder) {
+                    const order = Array.isArray(data.draftOrder) ? data.draftOrder : Object.values(data.draftOrder);
+                    summary += '\nDRAFT ORDER:\n';
+                    order.forEach((p, i) => {
+                        summary += '  ' + (i+1) + '. ' + p.name + ' (id: ' + p.id + ')\n';
+                    });
+                }
+
+                if (data.participants) {
+                    const parts = Array.isArray(data.participants) ? data.participants : Object.values(data.participants);
+                    summary += '\nPARTICIPANTS (' + parts.length + '):\n';
+                    parts.forEach((p, i) => {
+                        summary += '  ' + p.name + ' (id: ' + p.id + ')\n';
+                    });
+                }
+
+                el.textContent = summary;
+                log('Read complete. ' + Object.keys(data).length + ' keys found.');
+            } catch(e) {
+                log('ERROR reading Firebase: ' + e.message);
+            }
+        }
+
+        function buildNewState() {
+            const orderedParticipants = [
+                { id: 'p1', name: 'Jack Hobbs',      email: '' },
+                { id: 'p2', name: 'Nick Barker',     email: '' },
+                { id: 'p3', name: 'James Parker',    email: '' },
+                { id: 'p4', name: 'Callum Watling',  email: '' },
+                { id: 'p5', name: 'Tom Jackson',     email: '' },
+                { id: 'p6', name: 'Josh Platt',      email: '' },
+                { id: 'p7', name: 'Joe Day',         email: '' },
+                { id: 'p8', name: 'Harry Wetherald', email: '' },
+                { id: 'p9', name: 'Joe Johnson',     email: '' },
+            ];
+
+            // Scheffler = rank 1 = id 1, McIlroy = rank 3 = id 3 (from data.js order)
+            const draftedPlayers = [
+                {
+                    participantId: 'p1',
+                    participantName: 'Jack Hobbs',
+                    golferId: 1,
+                    golferName: 'Scottie Scheffler',
+                    pickNumber: 1,
+                    round: 1,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    participantId: 'p2',
+                    participantName: 'Nick Barker',
+                    golferId: 3,
+                    golferName: 'Rory McIlroy',
+                    pickNumber: 2,
+                    round: 1,
+                    timestamp: new Date().toISOString()
+                }
+            ];
+
+            return {
+                participants: orderedParticipants,
+                draftOrder: orderedParticipants,
+                signupClosed: true,
+                draftInProgress: true,
+                snakeDraftComplete: false,
+                draftComplete: false,
+                teams: [],
+                draftedPlayers: draftedPlayers,
+                currentPickIndex: 2
+            };
+        }
+
+        async function applyFix() {
+            if (!confirm('Write correct draft state to Firebase?\n\nJack Hobbs → Scheffler\nNick Barker → McIlroy\nJames Parker is next')) return;
+
+            log('Applying fix...');
+            try {
+                const newState = buildNewState();
+                log('Writing to Firebase...');
+                await db.ref('/').update(newState);
+                log('✅ Done! Firebase updated.');
+                log('Now refresh the main site (index.html) and check the Draft tab.');
+                await readFirebase();
+            } catch(e) {
+                log('ERROR: ' + e.message);
+            }
+        }
+
+        async function nukeAndFix() {
+            if (!confirm('NUKE all draft data then rewrite?\n\nThis deletes draftedPlayers, teams, currentPickIndex from Firebase first, waits 1 second, then writes the correct state.')) return;
+
+            log('Nuking old draft data from Firebase...');
+            try {
+                // Delete specific keys that cause problems
+                await db.ref('draftedPlayers').remove();
+                log('  Deleted draftedPlayers');
+                await db.ref('teams').remove();
+                log('  Deleted teams');
+                await db.ref('currentPickIndex').remove();
+                log('  Deleted currentPickIndex');
+                await db.ref('snakeDraftComplete').remove();
+                log('  Deleted snakeDraftComplete');
+                await db.ref('draftComplete').remove();
+                log('  Deleted draftComplete');
+
+                log('Waiting 1 second for Firebase to settle...');
+                await new Promise(r => setTimeout(r, 1000));
+
+                const newState = buildNewState();
+                log('Writing new state...');
+                await db.ref('/').update(newState);
+
+                log('✅ Nuke & Fix complete!');
+                log('Refresh the main site now.');
+                await readFirebase();
+            } catch(e) {
+                log('ERROR: ' + e.message);
+            }
+        }
+
+        // Auto-read on load
+        window.onload = () => {
+            log('Page loaded. Firebase initialised. Ready.');
+            readFirebase();
+        };
+    </script>
+</body>
+</html>
