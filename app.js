@@ -410,11 +410,10 @@ async function loadFromStorage() {
         if (drafted) draftedPlayers = drafted;
         if (snakeComplete) snakeDraftComplete = snakeComplete;
         if (draftProg) draftInProgress = draftProg;
-        // CRITICAL FIX: Restore currentPick from storage so draft doesn't reset to pick 0 on reload
+        // CRITICAL FIX: Restore currentPick so draft doesn't reset to pick 0 on reload
         if (savedPickIndex !== null && savedPickIndex !== undefined) {
             currentPick = savedPickIndex;
         } else if (draftedPlayers && draftedPlayers.length > 0) {
-            // Fallback: derive currentPick from number of drafted players
             currentPick = draftedPlayers.length;
         }
         
@@ -514,7 +513,6 @@ function setupRealtimeListeners() {
     listenToData('draftedPlayers', (data) => {
         if (data) {
             draftedPlayers = data;
-            // Keep currentPick in sync with drafted players length so reload doesn't break turn order
             if (Array.isArray(data) && data.length > currentPick) {
                 currentPick = data.length;
             }
@@ -1071,7 +1069,7 @@ function renderLiveDraft() {
             <div style="background: linear-gradient(135deg, var(--augusta-green), var(--shadow-deep)); 
                         padding: 30px; border-radius: 12px; color: white; margin-bottom: 30px; text-align: center;">
                 <h2 style="margin-bottom: 15px;">ðŸŽ¯ ${currentPicker.name}'s Pick</h2>
-                <div style="font-size: 3em; font-weight: bold; font-family: 'Courier New', monospace; 
+                <div id="pickTimerDisplay" style="font-size: 3em; font-weight: bold; font-family: 'Courier New', monospace; 
                             background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
                     â° ${timeDisplay}
                 </div>
@@ -1180,18 +1178,26 @@ function startPickTimer() {
         localStorage.setItem(CONFIG.storageKeys.currentPickStartTime, Date.now().toString());
     }
     
-    // Update every second
+    // Update every second - only update the timer element, NOT the full UI
+    // (rebuilding full UI every second breaks the search box and scroll position)
     pickTimerInterval = setInterval(() => {
         const pickStartTime = parseInt(localStorage.getItem(CONFIG.storageKeys.currentPickStartTime));
         const elapsed = Math.floor((Date.now() - pickStartTime) / 1000);
         const remaining = Math.max(0, PICK_TIME_LIMIT - elapsed);
         
         if (remaining === 0) {
-            // Time expired - auto-pick random available golfer
+            // Time expired - auto-pick best available golfer
             autoPickForTimeout();
         } else {
-            // Update display
-            renderLiveDraft();
+            // Just update the timer display element - no full re-render
+            const hours = Math.floor(remaining / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+            const timeDisplay = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const timerEl = document.getElementById('pickTimerDisplay');
+            if (timerEl) {
+                timerEl.textContent = '⏰ ' + timeDisplay;
+            }
         }
     }, 1000);
 }
@@ -1406,130 +1412,6 @@ function startSnakeDraft() {
     if (typeof sendPickNotification === 'function') {
         sendPickNotification(firstPicker, 1, totalPicks, 12);
     }
-}
-
-// ===== ADMIN: SEED DRAFT WITH CORRECT STATE =====
-async function adminSeedDraft() {
-    if (!confirm('RESET & SEED DRAFT?\n\nThis will:\n- Set draft order: Jack Hobbs, Nick Barker, James Parker, Callum Watling, Tom Jackson, Josh Platt, Joe Day, Harry Wetherald, Joe Johnson\n- Pre-assign: Jack Hobbs = Scottie Scheffler, Nick Barker = Rory McIlroy\n- Set it as James Parker\'s pick\n\nAll existing draft data will be cleared!')) {
-        return;
-    }
-
-    console.log('=== SEEDING DRAFT STATE ===');
-
-    const orderedParticipants = [
-        { id: 'p1', name: 'Jack Hobbs',      email: '' },
-        { id: 'p2', name: 'Nick Barker',     email: '' },
-        { id: 'p3', name: 'James Parker',    email: '' },
-        { id: 'p4', name: 'Callum Watling',  email: '' },
-        { id: 'p5', name: 'Tom Jackson',     email: '' },
-        { id: 'p6', name: 'Josh Platt',      email: '' },
-        { id: 'p7', name: 'Joe Day',         email: '' },
-        { id: 'p8', name: 'Harry Wetherald', email: '' },
-        { id: 'p9', name: 'Joe Johnson',     email: '' },
-    ];
-
-    // Preserve any existing emails only (never override IDs)
-    orderedParticipants.forEach(op => {
-        const existing = participants.find(p => p.name.toLowerCase().trim() === op.name.toLowerCase().trim());
-        if (existing && existing.email) {
-            op.email = existing.email;
-        }
-    });
-
-    // Ensure golfers are initialized before searching
-    if (!golfers || golfers.length === 0) initializeGolfers();
-
-    const scheffler = golfers.find(g => g.name === 'Scottie Scheffler');
-    const mcilroy = golfers.find(g => g.name === 'Rory McIlroy');
-
-    if (!scheffler || !mcilroy) {
-        alert('Error: Could not find Scottie Scheffler or Rory McIlroy in golfer list.');
-        return;
-    }
-
-    const seededDraftedPlayers = [
-        {
-            participantId: 'p1',
-            participantName: 'Jack Hobbs',
-            golferId: scheffler.id,
-            golferName: scheffler.name,
-            pickNumber: 1,
-            round: 1,
-            timestamp: new Date().toISOString()
-        },
-        {
-            participantId: 'p2',
-            participantName: 'Nick Barker',
-            golferId: mcilroy.id,
-            golferName: mcilroy.name,
-            pickNumber: 2,
-            round: 1,
-            timestamp: new Date().toISOString()
-        }
-    ];
-
-    // Build the complete new state object
-    const newState = {
-        participants: orderedParticipants,
-        draftOrder: orderedParticipants,
-        signupClosed: true,
-        draftInProgress: true,
-        snakeDraftComplete: false,
-        draftComplete: false,
-        teams: [],
-        draftedPlayers: seededDraftedPlayers,
-        currentPickIndex: 2  // James Parker's turn (index 2 = 3rd pick)
-    };
-
-    // Update local state first
-    participants = newState.participants;
-    draftOrder = newState.draftOrder;
-    signupClosed = newState.signupClosed;
-    draftInProgress = newState.draftInProgress;
-    snakeDraftComplete = newState.snakeDraftComplete;
-    draftComplete = newState.draftComplete;
-    teams = newState.teams;
-    draftedPlayers = newState.draftedPlayers;
-    currentPick = 2;
-
-    localStorage.setItem(CONFIG.storageKeys.currentPickStartTime, Date.now().toString());
-
-    // Write everything to Firebase in ONE atomic operation to prevent listener race conditions
-    if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
-        try {
-            console.log('Writing seed state atomically to Firebase...');
-            await database.ref('/').update({
-                participants: newState.participants,
-                draftOrder: newState.draftOrder,
-                signupClosed: newState.signupClosed,
-                draftInProgress: newState.draftInProgress,
-                snakeDraftComplete: newState.snakeDraftComplete,
-                draftComplete: newState.draftComplete,
-                teams: newState.teams,
-                draftedPlayers: newState.draftedPlayers,
-                currentPickIndex: newState.currentPickIndex
-            });
-            console.log('Firebase atomic write complete.');
-        } catch (e) {
-            console.error('Firebase atomic write failed, falling back to saveToStorage:', e);
-            await saveToStorage();
-        }
-    } else {
-        // localStorage fallback
-        await saveToStorage();
-    }
-
-    // Also save to localStorage as backup
-    Object.keys(newState).forEach(key => {
-        localStorage.setItem('masters2026_' + key, JSON.stringify(newState[key]));
-    });
-
-    console.log('Draft seeded. currentPick = 2 => James Parker turn');
-
-    updateAllViews();
-
-    alert('Draft Reset & Seeded!\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n\nIt is now James Parker\'s pick (Pick 3 of 18).\n\nGo to the Draft tab!');
-    switchTab('draft');
 }
 
 // Temporary function for testing
