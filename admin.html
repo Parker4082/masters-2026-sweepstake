@@ -218,7 +218,7 @@ Tiger Woods, 2, true"></textarea>
                 <button class="admin-btn btn-primary" onclick="viewDraftStatus()">View Draft Status</button>
                 <button class="admin-btn btn-warning" onclick="forceNextPick()">Force Next Pick</button>
                 <button class="admin-btn btn-warning" onclick="autoPickNow()">Auto-Pick Now</button>
-                <button class="admin-btn btn-danger" onclick="adminSeedDraft()" style="grid-column: 1/-1; background: #7b1fa2; border-color: #7b1fa2;">🔧 Reset & Seed Draft (Jack Hobbs #1, Nick Barker #2 → James Parker's turn)</button>
+                <button class="admin-btn btn-danger" onclick="adminSeedDraftDirect()" style="grid-column: 1/-1; background: #7b1fa2; border-color: #7b1fa2;">🔧 Reset & Seed Draft (Jack Hobbs #1, Nick Barker #2 → James Parker's turn)</button>
             </div>
             
             <div id="draftStatus" class="status-box" style="display: none;"></div>
@@ -489,6 +489,99 @@ Tiger Woods, 2, true"></textarea>
             showStatus('tournamentStatus', '[OK] Tournament reopened. Results tab hidden. Refresh main site.', 'good');
         }
         
+        // ===== SELF-CONTAINED SEED DRAFT (runs in admin context, no main app listeners) =====
+        async function adminSeedDraftDirect() {
+            if (!confirm('RESET & SEED DRAFT?\n\nThis will completely overwrite Firebase with:\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n3. James Parker (next pick)\n...and 6 more participants\n\nAll existing draft data will be cleared!')) return;
+
+            const orderedParticipants = [
+                { id: 'p1', name: 'Jack Hobbs',      email: '' },
+                { id: 'p2', name: 'Nick Barker',     email: '' },
+                { id: 'p3', name: 'James Parker',    email: '' },
+                { id: 'p4', name: 'Callum Watling',  email: '' },
+                { id: 'p5', name: 'Tom Jackson',     email: '' },
+                { id: 'p6', name: 'Josh Platt',      email: '' },
+                { id: 'p7', name: 'Joe Day',         email: '' },
+                { id: 'p8', name: 'Harry Wetherald', email: '' },
+                { id: 'p9', name: 'Joe Johnson',     email: '' },
+            ];
+
+            // Scottie Scheffler = rank 1 = id 1, Rory McIlroy = rank 3 = id 3
+            const seededDraftedPlayers = [
+                {
+                    participantId: 'p1',
+                    participantName: 'Jack Hobbs',
+                    golferId: 1,
+                    golferName: 'Scottie Scheffler',
+                    pickNumber: 1,
+                    round: 1,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    participantId: 'p2',
+                    participantName: 'Nick Barker',
+                    golferId: 3,
+                    golferName: 'Rory McIlroy',
+                    pickNumber: 2,
+                    round: 1,
+                    timestamp: new Date().toISOString()
+                }
+            ];
+
+            const newState = {
+                participants: orderedParticipants,
+                draftOrder: orderedParticipants,
+                signupClosed: true,
+                draftInProgress: true,
+                snakeDraftComplete: false,
+                draftComplete: false,
+                teams: [],
+                draftedPlayers: seededDraftedPlayers,
+                currentPickIndex: 2
+            };
+
+            try {
+                showStatus('draftStatus', 'Seeding draft... please wait...', 'good');
+
+                if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
+                    // Step 1: Delete old data first to prevent listeners from pulling it back
+                    const pathsToDelete = ['draftedPlayers', 'teams', 'currentPickIndex'];
+                    for (const path of pathsToDelete) {
+                        await database.ref(path).remove();
+                        console.log('Deleted:', path);
+                    }
+
+                    // Small delay to let listeners settle after delete
+                    await new Promise(r => setTimeout(r, 300));
+
+                    // Step 2: Write everything atomically
+                    await database.ref('/').update(newState);
+                    console.log('Firebase seeded successfully');
+                } else {
+                    console.warn('Firebase not available, using localStorage only');
+                }
+
+                // Always write to localStorage as well
+                localStorage.setItem('masters2026_participants', JSON.stringify(newState.participants));
+                localStorage.setItem('masters2026_draftOrder', JSON.stringify(newState.draftOrder));
+                localStorage.setItem('masters2026_signupClosed', JSON.stringify(newState.signupClosed));
+                localStorage.setItem('masters2026_draftInProgress', JSON.stringify(newState.draftInProgress));
+                localStorage.setItem('masters2026_snakeDraftComplete', JSON.stringify(newState.snakeDraftComplete));
+                localStorage.setItem('masters2026_draftComplete', JSON.stringify(newState.draftComplete));
+                localStorage.setItem('masters2026_teams', JSON.stringify(newState.teams));
+                localStorage.setItem('masters2026_draftedPlayers', JSON.stringify(newState.draftedPlayers));
+                localStorage.setItem('masters2026_currentPickIndex', JSON.stringify(newState.currentPickIndex));
+
+                showStatus('draftStatus', '[OK] Draft seeded!\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\nJames Parker is next (pick 3). Refresh the main site now!', 'good');
+                updateQuickStats();
+                alert('Draft seeded successfully!\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n\nJames Parker is now up (Pick 3).\n\nPlease REFRESH the main site to see the changes.');
+
+            } catch (e) {
+                console.error('Seed failed:', e);
+                showStatus('draftStatus', 'ERROR seeding draft: ' + e.message, 'bad');
+                alert('Error seeding draft: ' + e.message);
+            }
+        }
+
         // RESET FUNCTIONS
         async function resetSignupOnly() {
             if (!confirm('Reset signup? This will reopen signup and clear draft order.')) return;
