@@ -514,6 +514,18 @@ function setupRealtimeListeners() {
     listenToData('draftedPlayers', (data) => {
         if (data) {
             draftedPlayers = data;
+            // Keep currentPick in sync with drafted players length so reload doesn't break turn order
+            if (Array.isArray(data) && data.length > currentPick) {
+                currentPick = data.length;
+            }
+            updateDraftView();
+        }
+    });
+
+    // Listen for currentPickIndex so all clients stay in sync
+    listenToData('currentPickIndex', (data) => {
+        if (data !== null && data !== undefined) {
+            currentPick = data;
             updateDraftView();
         }
     });
@@ -1416,21 +1428,13 @@ async function adminSeedDraft() {
         { id: 'p9', name: 'Joe Johnson',     email: '' },
     ];
 
-    // Preserve any existing emails
+    // Preserve any existing emails only (never override IDs)
     orderedParticipants.forEach(op => {
         const existing = participants.find(p => p.name.toLowerCase().trim() === op.name.toLowerCase().trim());
         if (existing && existing.email) {
             op.email = existing.email;
         }
     });
-
-    participants = orderedParticipants;
-    draftOrder = orderedParticipants;
-    signupClosed = true;
-    draftInProgress = true;
-    snakeDraftComplete = false;
-    draftComplete = false;
-    teams = [];
 
     // Ensure golfers are initialized before searching
     if (!golfers || golfers.length === 0) initializeGolfers();
@@ -1443,9 +1447,9 @@ async function adminSeedDraft() {
         return;
     }
 
-    draftedPlayers = [
+    const seededDraftedPlayers = [
         {
-            participantId: orderedParticipants[0].id,
+            participantId: 'p1',
             participantName: 'Jack Hobbs',
             golferId: scheffler.id,
             golferName: scheffler.name,
@@ -1454,7 +1458,7 @@ async function adminSeedDraft() {
             timestamp: new Date().toISOString()
         },
         {
-            participantId: orderedParticipants[1].id,
+            participantId: 'p2',
             participantName: 'Nick Barker',
             golferId: mcilroy.id,
             golferName: mcilroy.name,
@@ -1464,14 +1468,64 @@ async function adminSeedDraft() {
         }
     ];
 
-    // currentPick = 2 => index 2 = James Parker's turn (pick #3)
+    // Build the complete new state object
+    const newState = {
+        participants: orderedParticipants,
+        draftOrder: orderedParticipants,
+        signupClosed: true,
+        draftInProgress: true,
+        snakeDraftComplete: false,
+        draftComplete: false,
+        teams: [],
+        draftedPlayers: seededDraftedPlayers,
+        currentPickIndex: 2  // James Parker's turn (index 2 = 3rd pick)
+    };
+
+    // Update local state first
+    participants = newState.participants;
+    draftOrder = newState.draftOrder;
+    signupClosed = newState.signupClosed;
+    draftInProgress = newState.draftInProgress;
+    snakeDraftComplete = newState.snakeDraftComplete;
+    draftComplete = newState.draftComplete;
+    teams = newState.teams;
+    draftedPlayers = newState.draftedPlayers;
     currentPick = 2;
 
     localStorage.setItem(CONFIG.storageKeys.currentPickStartTime, Date.now().toString());
 
-    console.log('Draft seeded. currentPick =', currentPick, '=> James Parker turn');
+    // Write everything to Firebase in ONE atomic operation to prevent listener race conditions
+    if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
+        try {
+            console.log('Writing seed state atomically to Firebase...');
+            await database.ref('/').update({
+                participants: newState.participants,
+                draftOrder: newState.draftOrder,
+                signupClosed: newState.signupClosed,
+                draftInProgress: newState.draftInProgress,
+                snakeDraftComplete: newState.snakeDraftComplete,
+                draftComplete: newState.draftComplete,
+                teams: newState.teams,
+                draftedPlayers: newState.draftedPlayers,
+                currentPickIndex: newState.currentPickIndex
+            });
+            console.log('Firebase atomic write complete.');
+        } catch (e) {
+            console.error('Firebase atomic write failed, falling back to saveToStorage:', e);
+            await saveToStorage();
+        }
+    } else {
+        // localStorage fallback
+        await saveToStorage();
+    }
 
-    await saveToStorage();
+    // Also save to localStorage as backup
+    Object.keys(newState).forEach(key => {
+        localStorage.setItem('masters2026_' + key, JSON.stringify(newState[key]));
+    });
+
+    console.log('Draft seeded. currentPick = 2 => James Parker turn');
+
     updateAllViews();
 
     alert('Draft Reset & Seeded!\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n\nIt is now James Parker\'s pick (Pick 3 of 18).\n\nGo to the Draft tab!');
