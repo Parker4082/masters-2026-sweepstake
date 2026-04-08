@@ -218,7 +218,7 @@ Tiger Woods, 2, true"></textarea>
                 <button class="admin-btn btn-primary" onclick="viewDraftStatus()">View Draft Status</button>
                 <button class="admin-btn btn-warning" onclick="forceNextPick()">Force Next Pick</button>
                 <button class="admin-btn btn-warning" onclick="autoPickNow()">Auto-Pick Now</button>
-                <button class="admin-btn btn-danger" onclick="adminSeedDraftDirect()" style="grid-column: 1/-1; background: #7b1fa2; border-color: #7b1fa2;">🔧 Reset & Seed Draft (Jack Hobbs #1, Nick Barker #2 → James Parker's turn)</button>
+                <button class="admin-btn btn-danger" onclick="removeLastTwoPicks()">↩ Remove Last 2 Picks</button>
             </div>
             
             <div id="draftStatus" class="status-box" style="display: none;"></div>
@@ -280,32 +280,11 @@ Tiger Woods, 2, true"></textarea>
     <script src="firebase-config.js"></script>
     <script src="email-config.js"></script>
     <script src="data.js"></script>
+    <script src="formGuide.js"></script>
+    <script src="app.js"></script>
     
     <script>
         // ADMIN PANEL FUNCTIONS - CLEAN AND SIMPLE
-
-        // Minimal CONFIG (app.js not loaded in admin to avoid listener conflicts)
-        const CONFIG = {
-            storageKeys: {
-                participants: 'masters2026_participants',
-                teams: 'masters2026_teams',
-                draftComplete: 'masters2026_draft',
-                playerScores: 'masters2026_scores',
-                signupClosed: 'masters2026_signupClosed',
-                draftOrder: 'masters2026_draftOrder',
-                draftedPlayers: 'masters2026_draftedPlayers',
-                snakeDraftComplete: 'masters2026_snakeDraftComplete',
-                draftInProgress: 'masters2026_draftInProgress',
-                csvUrl: 'masters2026_csvUrl',
-                autoSync: 'masters2026_autoSync',
-                lastSyncTime: 'masters2026_lastSyncTime',
-                participantEmails: 'masters2026_participantEmails',
-                currentPickStartTime: 'masters2026_currentPickStartTime',
-                currentPickIndex: 'masters2026_currentPickIndex',
-                autoPickComplete: 'masters2026_autoPickComplete',
-                tournamentConcluded: 'masters2026_tournamentConcluded'
-            }
-        };
         
         function showStatus(elementId, message, type = 'good') {
             const element = document.getElementById(elementId);
@@ -426,14 +405,6 @@ Tiger Woods, 2, true"></textarea>
         }
         
         // DRAFT CONTROLS
-        // Stubs for functions that were in app.js (removed to prevent listener conflicts)
-        async function closeDraftSignup() {
-            alert('Use the main site to close signup, or use the Reset & Seed Draft button below to set the draft directly.');
-        }
-        async function startSnakeDraft() {
-            alert('Use the main site to start the draft, or use the Reset & Seed Draft button below to set the draft directly.');
-        }
-
         function viewDraftStatus() {
             const draftedPlayers = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftedPlayers) || '[]');
             const draftOrder = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftOrder) || '[]');
@@ -493,7 +464,39 @@ Tiger Woods, 2, true"></textarea>
             }
         }
         
-        // TOURNAMENT CONTROLS
+        async function removeLastTwoPicks() {
+            // Load current draftedPlayers from localStorage
+            const draftedPlayers = JSON.parse(localStorage.getItem(CONFIG.storageKeys.draftedPlayers) || '[]');
+            
+            if (draftedPlayers.length === 0) {
+                showStatus('draftStatus', 'No picks to remove.', 'error');
+                return;
+            }
+            
+            const count = Math.min(2, draftedPlayers.length);
+            const toRemove = draftedPlayers.slice(-count);
+            const names = toRemove.map(p => `${p.participantName} → ${p.golferName}`).join('\n');
+            
+            if (!confirm(`Remove the last ${count} pick(s)?\n\n${names}\n\nThis will undo those selections and step the draft back.`)) return;
+            
+            const updated = draftedPlayers.slice(0, -count);
+            const newPickNumber = updated.length; // currentPick rewinds to this
+            
+            // Update localStorage
+            localStorage.setItem(CONFIG.storageKeys.draftedPlayers, JSON.stringify(updated));
+            localStorage.removeItem(CONFIG.storageKeys.currentPickStartTime); // reset timer
+            
+            // Sync to Firebase
+            if (typeof saveData === 'function') {
+                await saveData('draftedPlayers', updated);
+            }
+            if (typeof deleteData === 'function') {
+                await deleteData('currentPickStartTime');
+            }
+            
+            showStatus('draftStatus', `[OK] Removed last ${count} pick(s). Draft rewound to pick ${newPickNumber + 1}. Refresh main site.`, 'good');
+        }
+        
         async function concludeTournament() {
             if (!confirm('Conclude the tournament? This will show the Results tab.')) return;
             
@@ -518,99 +521,6 @@ Tiger Woods, 2, true"></textarea>
             showStatus('tournamentStatus', '[OK] Tournament reopened. Results tab hidden. Refresh main site.', 'good');
         }
         
-        // ===== SELF-CONTAINED SEED DRAFT (runs in admin context, no main app listeners) =====
-        async function adminSeedDraftDirect() {
-            if (!confirm('RESET & SEED DRAFT?\n\nThis will completely overwrite Firebase with:\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n3. James Parker (next pick)\n...and 6 more participants\n\nAll existing draft data will be cleared!')) return;
-
-            const orderedParticipants = [
-                { id: 'p1', name: 'Jack Hobbs',      email: '' },
-                { id: 'p2', name: 'Nick Barker',     email: '' },
-                { id: 'p3', name: 'James Parker',    email: '' },
-                { id: 'p4', name: 'Callum Watling',  email: '' },
-                { id: 'p5', name: 'Tom Jackson',     email: '' },
-                { id: 'p6', name: 'Josh Platt',      email: '' },
-                { id: 'p7', name: 'Joe Day',         email: '' },
-                { id: 'p8', name: 'Harry Wetherald', email: '' },
-                { id: 'p9', name: 'Joe Johnson',     email: '' },
-            ];
-
-            // Scottie Scheffler = rank 1 = id 1, Rory McIlroy = rank 3 = id 3
-            const seededDraftedPlayers = [
-                {
-                    participantId: 'p1',
-                    participantName: 'Jack Hobbs',
-                    golferId: 1,
-                    golferName: 'Scottie Scheffler',
-                    pickNumber: 1,
-                    round: 1,
-                    timestamp: new Date().toISOString()
-                },
-                {
-                    participantId: 'p2',
-                    participantName: 'Nick Barker',
-                    golferId: 3,
-                    golferName: 'Rory McIlroy',
-                    pickNumber: 2,
-                    round: 1,
-                    timestamp: new Date().toISOString()
-                }
-            ];
-
-            const newState = {
-                participants: orderedParticipants,
-                draftOrder: orderedParticipants,
-                signupClosed: true,
-                draftInProgress: true,
-                snakeDraftComplete: false,
-                draftComplete: false,
-                teams: [],
-                draftedPlayers: seededDraftedPlayers,
-                currentPickIndex: 2
-            };
-
-            try {
-                showStatus('draftStatus', 'Seeding draft... please wait...', 'good');
-
-                if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
-                    // Step 1: Delete old data first to prevent listeners from pulling it back
-                    const pathsToDelete = ['draftedPlayers', 'teams', 'currentPickIndex'];
-                    for (const path of pathsToDelete) {
-                        await database.ref(path).remove();
-                        console.log('Deleted:', path);
-                    }
-
-                    // Small delay to let listeners settle after delete
-                    await new Promise(r => setTimeout(r, 300));
-
-                    // Step 2: Write everything atomically
-                    await database.ref('/').update(newState);
-                    console.log('Firebase seeded successfully');
-                } else {
-                    console.warn('Firebase not available, using localStorage only');
-                }
-
-                // Always write to localStorage as well
-                localStorage.setItem('masters2026_participants', JSON.stringify(newState.participants));
-                localStorage.setItem('masters2026_draftOrder', JSON.stringify(newState.draftOrder));
-                localStorage.setItem('masters2026_signupClosed', JSON.stringify(newState.signupClosed));
-                localStorage.setItem('masters2026_draftInProgress', JSON.stringify(newState.draftInProgress));
-                localStorage.setItem('masters2026_snakeDraftComplete', JSON.stringify(newState.snakeDraftComplete));
-                localStorage.setItem('masters2026_draftComplete', JSON.stringify(newState.draftComplete));
-                localStorage.setItem('masters2026_teams', JSON.stringify(newState.teams));
-                localStorage.setItem('masters2026_draftedPlayers', JSON.stringify(newState.draftedPlayers));
-                localStorage.setItem('masters2026_currentPickIndex', JSON.stringify(newState.currentPickIndex));
-
-                showStatus('draftStatus', '[OK] Draft seeded!\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\nJames Parker is next (pick 3). Refresh the main site now!', 'good');
-                updateQuickStats();
-                alert('Draft seeded successfully!\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\n\nJames Parker is now up (Pick 3).\n\nPlease REFRESH the main site to see the changes.');
-
-            } catch (e) {
-                console.error('Seed failed:', e);
-                showStatus('draftStatus', 'ERROR seeding draft: ' + e.message, 'bad');
-                alert('Error seeding draft: ' + e.message);
-            }
-        }
-
         // RESET FUNCTIONS
         async function resetSignupOnly() {
             if (!confirm('Reset signup? This will reopen signup and clear draft order.')) return;
