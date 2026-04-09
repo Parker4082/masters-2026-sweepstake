@@ -379,6 +379,7 @@ async function saveToStorage() {
         await saveData('snakeDraftComplete', snakeDraftComplete);
         await saveData('draftInProgress', draftInProgress);
         await saveData('currentPickIndex', currentPick);
+        await saveData('playerScores', golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]})));
         
         console.log('âœ… Data saved successfully');
         return true;
@@ -401,6 +402,7 @@ async function loadFromStorage() {
         const snakeComplete = await loadData('snakeDraftComplete');
         const draftProg = await loadData('draftInProgress');
         const savedPickIndex = await loadData('currentPickIndex');
+        const savedScores = await loadData('playerScores');
         
         if (p) participants = p;
         if (t) teams = t;
@@ -416,6 +418,7 @@ async function loadFromStorage() {
         } else if (draftedPlayers && draftedPlayers.length > 0) {
             currentPick = draftedPlayers.length;
         }
+        if (savedScores && Array.isArray(savedScores)) { savedScores.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score||0; g.missedCut = s.missedCut||false; g.rounds = s.rounds||[0,0,0,0]; }}); }
         
         // AUTO-FIX: Check for invalid states and fix them
         let needsFix = false;
@@ -537,6 +540,16 @@ function setupRealtimeListeners() {
         }
     });
     
+    listenToData('playerScores', (data) => {
+        if (data && Array.isArray(data)) {
+            data.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score||0; g.missedCut = s.missedCut||false; g.rounds = s.rounds||[0,0,0,0]; } });
+            if (typeof updateLeaderboardView === 'function') updateLeaderboardView();
+            if (typeof updateTeamsView === 'function') updateTeamsView();
+        }
+    });
+    listenToData('currentPickIndex', (data) => {
+        if (data !== null && data !== undefined) { currentPick = data; if (typeof updateDraftView === 'function') updateDraftView(); }
+    });
     console.log('âœ… Real-time listeners active');
 }
 
@@ -2662,6 +2675,12 @@ function importScoresFromCSV() {
         });
         
         if (updates > 0) {
+            // Save scores to Firebase so all clients update
+            if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
+                const scoreData = golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]}));
+                database.ref('playerScores').set(scoreData).catch(e => console.error('Score save error:', e));
+            }
+            localStorage.setItem('masters2026_scores', JSON.stringify(golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]}))));
             saveToStorage();
             updateAllViews();
             
@@ -3420,7 +3439,7 @@ function renderTeamsTab() {
     teams.forEach((team, index) => {
         html += `
             <div class="team-roster-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div onclick="toggleTeamRoster('roster-${index}')" style="cursor: pointer; border-bottom: 2px solid #006747; padding-bottom: 10px; margin-bottom: 15px;">
+                <div onclick="toggleRosterDetails('roster-${index}')" style="cursor: pointer; border-bottom: 2px solid #006747; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #006747;">${team.participantName}</h3>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9em;">${team.players.length} golfers â€¢ Click to expand</p>
                 </div>
@@ -3439,8 +3458,8 @@ function renderTeamsTab() {
     container.innerHTML = html;
 }
 
-// Toggle team roster
-function toggleTeamRoster(rosterId) {
+// Toggle team roster (simple)
+function toggleRosterDetails(rosterId) {
     const details = document.getElementById(rosterId + '-details');
     if (details) {
         details.style.display = details.style.display === 'none' ? 'block' : 'none';
