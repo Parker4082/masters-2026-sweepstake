@@ -3435,7 +3435,7 @@ function renderTeamsTab() {
     teams.forEach((team, index) => {
         html += `
             <div class="team-roster-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div onclick="toggleTeamRoster('roster-${index}')" style="cursor: pointer; border-bottom: 2px solid #006747; padding-bottom: 10px; margin-bottom: 15px;">
+                <div onclick="toggleTeamRosterSimple('roster-${index}')" style="cursor: pointer; border-bottom: 2px solid #006747; padding-bottom: 10px; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #006747;">${team.participantName}</h3>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9em;">${team.players.length} golfers  -  Click to expand</p>
                 </div>
@@ -3454,8 +3454,8 @@ function renderTeamsTab() {
     container.innerHTML = html;
 }
 
-// Toggle team roster
-function toggleTeamRoster(rosterId) {
+// Toggle team roster (simple version for renderTeamsTab)
+function toggleTeamRosterSimple(rosterId) {
     const details = document.getElementById(rosterId + '-details');
     if (details) {
         details.style.display = details.style.display === 'none' ? 'block' : 'none';
