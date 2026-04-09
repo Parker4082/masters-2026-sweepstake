@@ -403,7 +403,6 @@ async function loadFromStorage() {
         const draftProg = await loadData('draftInProgress');
         const savedPickIndex = await loadData('currentPickIndex');
         const savedScores = await loadData('playerScores');
-        const savedPickIndex = await loadData('currentPickIndex');
         
         if (p) participants = p;
         if (t) teams = t;
@@ -413,13 +412,13 @@ async function loadFromStorage() {
         if (drafted) draftedPlayers = drafted;
         if (snakeComplete) snakeDraftComplete = snakeComplete;
         if (draftProg) draftInProgress = draftProg;
-        if (savedPickIndex !== null && savedPickIndex !== undefined) { currentPick = savedPickIndex; } else if (draftedPlayers && draftedPlayers.length > 0) { currentPick = draftedPlayers.length; }
-        if (savedScores && Array.isArray(savedScores)) { savedScores.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score || 0; g.missedCut = s.missedCut || false; g.rounds = s.rounds || [0,0,0,0]; } }); }
-        // CRITICAL FIX: Restore currentPick so draft doesn't reset to pick 0 on reload
         if (savedPickIndex !== null && savedPickIndex !== undefined) {
             currentPick = savedPickIndex;
         } else if (draftedPlayers && draftedPlayers.length > 0) {
             currentPick = draftedPlayers.length;
+        }
+        if (savedScores && Array.isArray(savedScores)) {
+            savedScores.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score || 0; g.missedCut = s.missedCut || false; g.rounds = s.rounds || [0,0,0,0]; } });
         }
         
         // AUTO-FIX: Check for invalid states and fix them
