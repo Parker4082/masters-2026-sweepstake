@@ -700,7 +700,14 @@ function switchTab(tabName) {
     if (tabName === 'draft') updateDraftView();
     if (tabName === 'teams') updateTeamsView();
     if (tabName === 'formguide') updateFormGuideView();
-    if (tabName === 'leaderboard') updateTrackingView();
+    if (tabName === 'leaderboard') {
+    // Call the toggle function to ensure the correct view is shown and rendered
+    if (typeof toggleLeaderboard === 'function') {
+        toggleLeaderboard('sweepstake');
+    } else {
+        updateTrackingView(); // Fallback if toggle isn't found
+    }
+};
     if (tabName === 'results') updateResultsView();
     
     console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Tab switch complete');
