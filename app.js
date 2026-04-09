@@ -3329,8 +3329,8 @@ function renderSweepstakeLeaderboard() {
                         </div>
                     </div>
                     <div style="margin-top: 10px; color: #666; font-size: 0.95em;">
-                        <strong>${ts.bestPlayer.name}</strong> â€¢ 
-                        ${ts.activePlayers} active â€¢ ${ts.cutPlayers} cut
+                        <strong>${ts.bestPlayer.name}</strong> • 
+                        ${ts.activePlayers} active • ${ts.cutPlayers} cut
                         <span style="float: right;">▼ Click to expand</span>
                     </div>
                 </div>
