@@ -1519,6 +1519,14 @@ function updateTeamsView() {
     console.log('Rendering', teams.length, 'teams...');
     let html = '';
     
+    // Sync current scores from golfers array into team players
+    teams.forEach(team => {
+        team.players.forEach(p => {
+            const live = golfers.find(g => g.id === p.id);
+            if (live) { p.score = live.score; p.missedCut = live.missedCut; }
+        });
+    });
+
     teams.forEach((team, teamIndex) => {
         const activePlayers = team.players.filter(p => !p.missedCut);
         const bestScore = activePlayers.length > 0 ? 
@@ -1554,7 +1562,7 @@ function updateTeamsView() {
                                     <span>
                                         <span class="tier-badge tier-${p.tier}">T${p.tier}</span>
                                         ${p.name}
-                                        ${isBestPlayer ? '<span style="color: #FFD700; margin-left: 6px;">ÃƒÂ¢Ã…â€œÃ¢â‚¬Â</span>' : ''}
+                                        ${isBestPlayer ? '<span style="color: #FFD700; margin-left: 6px;">⭐</span>' : ''}
                                     </span>
                                     <strong style="font-size: 1em;">${formatScore(p.score)} ${p.missedCut ? '*Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}</strong>
                                 </div>
@@ -2325,7 +2333,7 @@ function updateTrackingView() {
                             const isBest = p.score === team.totalScore && !p.missedCut;
                             return `
                                 <div class="player-mini ${p.missedCut ? 'missed-cut' : ''} ${isBest ? 'best-player-mini' : ''}">
-                                    ${p.name}: ${formatScore(p.score)} ${isBest ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â' : ''} ${p.missedCut ? '*Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}
+                                    ${p.name}: ${formatScore(p.score)} ${isBest ? '⭐' : ''} ${p.missedCut ? '*Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}
                                 </div>
                             `;
                         }).join('')}
