@@ -352,6 +352,13 @@ Tiger Woods, 2, true"></textarea>
                 }
 
                 // Find golfer by fuzzy name match
+                // Ensure golfers array is populated
+                if (!golfers || golfers.length === 0) {
+                    if (typeof initializeGolfers === 'function') initializeGolfers();
+                    else if (typeof masters2026Field !== 'undefined') {
+                        golfers = masters2026Field.map((g, i) => ({...g, id: i + 1}));
+                    }
+                }
                 const golfer = golfers.find(g =>
                     g.name.toLowerCase().includes(name.toLowerCase()) ||
                     name.toLowerCase().includes(g.name.toLowerCase())
