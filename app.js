@@ -379,12 +379,12 @@ async function saveToStorage() {
         await saveData('snakeDraftComplete', snakeDraftComplete);
         await saveData('draftInProgress', draftInProgress);
         await saveData('currentPickIndex', currentPick);
-        await saveData('playerScores', golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]})));
+        await saveData('playerScores', golfers.map(g => ({id:g.id,name:g.name,score:g.score,missedCut:g.missedCut,rounds:g.rounds||[0,0,0,0]})));
         
         console.log('âœ… Data saved successfully');
         return true;
     } catch (e) {
-        console.error('âŒ Error saving:', e);
+        console.error('âŒ Error saving:', e);
         alert('Error saving data!');
         return false;
     }
@@ -418,21 +418,21 @@ async function loadFromStorage() {
         } else if (draftedPlayers && draftedPlayers.length > 0) {
             currentPick = draftedPlayers.length;
         }
-        if (savedScores && Array.isArray(savedScores)) { savedScores.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score||0; g.missedCut = s.missedCut||false; g.rounds = s.rounds||[0,0,0,0]; }}); }
+        if (savedScores && Array.isArray(savedScores)) { savedScores.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score=s.score||0; g.missedCut=s.missedCut||false; g.rounds=s.rounds||[0,0,0,0]; }}); }
         
         // AUTO-FIX: Check for invalid states and fix them
         let needsFix = false;
         
         // Fix 1: Signup closed but no participants
         if (signupClosed && participants.length === 0) {
-            console.warn('âš ï¸ AUTO-FIX: Signup was closed with no participants. Reopening signup.');
+            console.warn('âš ï¸ AUTO-FIX: Signup was closed with no participants. Reopening signup.');
             signupClosed = false;
             needsFix = true;
         }
         
         // Fix 2: Draft complete but no teams
         if (draftComplete && teams.length === 0) {
-            console.warn('âš ï¸ AUTO-FIX: Draft marked complete with no teams. Resetting draft.');
+            console.warn('âš ï¸ AUTO-FIX: Draft marked complete with no teams. Resetting draft.');
             draftComplete = false;
             snakeDraftComplete = false;
             draftInProgress = false;
@@ -441,7 +441,7 @@ async function loadFromStorage() {
         
         // Fix 3: Draft in progress but no participants
         if (draftInProgress && participants.length === 0) {
-            console.warn('âš ï¸ AUTO-FIX: Draft in progress with no participants. Resetting draft.');
+            console.warn('âš ï¸ AUTO-FIX: Draft in progress with no participants. Resetting draft.');
             draftInProgress = false;
             signupClosed = false;
             needsFix = true;
@@ -458,7 +458,7 @@ async function loadFromStorage() {
         console.log('  Draft in progress:', draftInProgress);
         console.log('  Draft complete:', draftComplete);
     } catch (e) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Error loading:', e);
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Error loading:', e);
     }
 }
 
@@ -542,13 +542,13 @@ function setupRealtimeListeners() {
     
     listenToData('playerScores', (data) => {
         if (data && Array.isArray(data)) {
-            data.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score = s.score||0; g.missedCut = s.missedCut||false; g.rounds = s.rounds||[0,0,0,0]; } });
+            data.forEach(s => { const g = golfers.find(g => g.id === s.id); if (g) { g.score=s.score||0; g.missedCut=s.missedCut||false; g.rounds=s.rounds||[0,0,0,0]; } });
             if (typeof updateLeaderboardView === 'function') updateLeaderboardView();
             if (typeof updateTeamsView === 'function') updateTeamsView();
         }
     });
     listenToData('currentPickIndex', (data) => {
-        if (data !== null && data !== undefined) { currentPick = data; if (typeof updateDraftView === 'function') updateDraftView(); }
+        if (data !== null && data !== undefined) { currentPick = data; if (typeof updateDraftView==='function') updateDraftView(); }
     });
     console.log('âœ… Real-time listeners active');
 }
@@ -612,7 +612,7 @@ function resetDraftOnly() {
         switchTab('draft');
         
     } catch (e) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Reset draft error:', e);
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Reset draft error:', e);
         alert('Error during draft reset: ' + e.message);
     }
 }
@@ -621,7 +621,7 @@ function handleReset() {
     console.log('=== RESET BUTTON CLICKED ===');
     alert('Reset button was clicked! This is working.');
     
-    const confirmed = confirm('âš ï¸ CLEAR ALL DATA?\n\nThis will:\nâ€¢ Delete all participants\nâ€¢ Clear the draft\nâ€¢ Reset all teams\nâ€¢ Cannot be undone\n\nAre you absolutely sure?');
+    const confirmed = confirm('âš ï¸ CLEAR ALL DATA?\n\nThis will:\nâ€¢ Delete all participants\nâ€¢ Clear the draft\nâ€¢ Reset all teams\nâ€¢ Cannot be undone\n\nAre you absolutely sure?');
     
     if (!confirmed) {
         console.log('Reset cancelled by user');
@@ -672,14 +672,14 @@ function handleReset() {
         alert('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Complete Reset Successful!\n\nAll data has been cleared.');
         
     } catch (e) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Reset error:', e);
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Reset error:', e);
         alert('Error during reset: ' + e.message);
     }
 }
 
 // ===== TAB NAVIGATION =====
 function switchTab(tabName) {
-    console.log('â†©ï¸ Switching to tab:', tabName);
+    console.log('â†©ï¸ Switching to tab:', tabName);
     
     // Add "Tab" suffix to match actual IDs
     const tabId = tabName + 'Tab';
@@ -694,7 +694,7 @@ function switchTab(tabName) {
         tabContent.classList.add('active');
         console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Activated tab:', tabId);
     } else {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Tab not found:', tabId);
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Tab not found:', tabId);
     }
     
     // Find and activate the button - match based on onclick attribute
@@ -718,7 +718,7 @@ function switchTab(tabName) {
 
 // ===== UPDATE ALL VIEWS =====
 function updateAllViews() {
-    console.log('â†©ï¸ Updating all views...');
+    console.log('â†©ï¸ Updating all views...');
     updateFormGuideView();  // Load form guide first since it's default tab
     updateJoinView();
     updateDraftView();
@@ -740,27 +740,27 @@ function joinSweepstake() {
     
     // Validation: Name required
     if (!name) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter your name!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter your name!');
         nameInput.focus();
         return;
     }
     
     // Validation: Name length
     if (name.length < 2) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Name must be at least 2 characters long!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Name must be at least 2 characters long!');
         nameInput.focus();
         return;
     }
     
     if (name.length > 50) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Name must be less than 50 characters!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Name must be less than 50 characters!');
         nameInput.focus();
         return;
     }
     
     // Validation: Email required
     if (!email) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter your email address!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter your email address!');
         emailInput.focus();
         return;
     }
@@ -768,33 +768,33 @@ function joinSweepstake() {
     // Validation: Email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter a valid email address!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Please enter a valid email address!');
         emailInput.focus();
         return;
     }
     
     // Check signup status
     if (signupClosed) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Sorry, signup is closed! Draft order has been set.');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ Sorry, signup is closed! Draft order has been set.');
         return;
     }
     
     // Check capacity
     if (participants.length >= MAX_PARTICIPANTS) {
-        alert(`ÃƒÂ¢Ã‚ÂÃ…â€™ Sweepstake is full (${MAX_PARTICIPANTS}/${MAX_PARTICIPANTS})!`);
+        alert(`ÃƒÂ¢Ã‚ÂÃ…â€™ Sweepstake is full (${MAX_PARTICIPANTS}/${MAX_PARTICIPANTS})!`);
         return;
     }
     
     // Check duplicate name
     if (participants.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ That name is already taken!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ That name is already taken!');
         nameInput.focus();
         return;
     }
     
     // Check duplicate email
     if (participants.some(p => p.email && p.email.toLowerCase() === email.toLowerCase())) {
-        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ That email is already registered!');
+        alert('ÃƒÂ¢Ã‚ÂÃ…â€™ That email is already registered!');
         emailInput.focus();
         return;
     }
@@ -987,7 +987,7 @@ function updateDraftView() {
         // Waiting for signup to close
         draftOrderDisplay.innerHTML = `
             <div class="alert alert-warning">
-                âš ï¸ <strong>Waiting for signup to close</strong><br>
+                âš ï¸ <strong>Waiting for signup to close</strong><br>
                 Need ${MIN_PARTICIPANTS}-${MAX_PARTICIPANTS} participants. Currently: ${participants.length}<br>
                 Go to Join tab to add participants, then click "Close Signup" when ready.
             </div>
@@ -998,7 +998,7 @@ function updateDraftView() {
         draftOrderDisplay.innerHTML = `
             <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: var(--card-shadow); margin: 20px 0;">
                 <h4 style="color: var(--augusta-green); margin-bottom: 20px; font-size: 1.5em;">
-                    ðŸ† Draft Order (Randomized)
+                    ðŸ† Draft Order (Randomized)
                 </h4>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                     <div>
@@ -1010,7 +1010,7 @@ function updateDraftView() {
                         `).join('')}
                     </div>
                     <div>
-                        <strong style="color: var(--text-light);">ROUND 2 â†©ï¸ (Snake)</strong>
+                        <strong style="color: var(--text-light);">ROUND 2 â†©ï¸ (Snake)</strong>
                         ${[...draftOrder].reverse().map((p, i) => `
                             <div style="padding: 12px; margin: 8px 0; background: #f5f5f5; border-radius: 8px; border-left: 4px solid var(--masters-gold);">
                                 <strong>${draftOrder.length + i + 1}.</strong> ${p.name}
@@ -1031,7 +1031,7 @@ function updateDraftView() {
                     Draft order has been randomized (see above).
                 </p>
                 <p style="color: var(--text-light); font-size: 0.95em; margin-bottom: 20px;">
-                    â° Each pick: 12 hours | ðŸŒï¸ 2 rounds snake draft + auto-pick remaining
+                    â° Each pick: 12 hours | ðŸŒï¸ 2 rounds snake draft + auto-pick remaining
                 </p>
             </div>
         `;
@@ -1102,7 +1102,7 @@ function renderLiveDraft() {
                 <h2 style="margin-bottom: 15px;">ðŸŽ¯ ${currentPicker.name}'s Pick</h2>
                 <div id="pickTimerDisplay" style="font-size: 3em; font-weight: bold; font-family: 'Courier New', monospace; 
                             background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    â° ${timeDisplay}
+                    â° ${timeDisplay}
                 </div>
                 <p style="font-size: 1.2em; opacity: 0.9;">
                     Pick ${currentPick + 1} of ${totalPicks} | Round ${currentRound} of ${SNAKE_DRAFT_ROUNDS}
@@ -1293,7 +1293,7 @@ function selectGolfer(golferId) {
 }
 
 function autoPickForTimeout() {
-    console.log('ÃƒÂ¢Ã‚ÂÃ‚Â° Time expired! Auto-picking...');
+    console.log('ÃƒÂ¢Ã‚ÂÃ‚Â° Time expired! Auto-picking...');
     
     // Get current picker info before making the pick
     const totalPicks = SNAKE_DRAFT_ROUNDS * draftOrder.length;
@@ -1406,7 +1406,7 @@ function executeAutoPick() {
         });
     }
     
-    alert('ðŸ Draft Complete!\n\nAll golfers have been assigned.\nCheck the Teams tab to see your roster!');
+    alert('ðŸ Draft Complete!\n\nAll golfers have been assigned.\nCheck the Teams tab to see your roster!');
 }
 
 function startSnakeDraft() {
@@ -1496,7 +1496,7 @@ function skipToAutoDraft() {
         alert(`ðŸŽ‰ Auto-Draft Complete!\n\n${numTeams} teams created with ${basePlayersPerTeam}-${basePlayersPerTeam + 1} players each.\n\nCheck Teams tab!`);
         
     } catch (e) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Auto-draft error:', e);
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Auto-draft error:', e);
         alert('Error running auto-draft!');
     }
 }
@@ -1516,7 +1516,7 @@ function updateTeamsView() {
     console.log('Container found:', !!container);
     
     if (!container) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ teamsDisplay container not found!');
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ teamsDisplay container not found!');
         return;
     }
     
@@ -1545,14 +1545,14 @@ function updateTeamsView() {
             <div class="team-roster">
                 <div class="team-roster-header" onclick="toggleTeamRoster(${teamIndex})">
                     <div class="team-name-section">
-                        <span class="collapse-icon" id="icon-${teamIndex}">▼</span>
+                        <span class="collapse-icon" id="icon-${teamIndex}">â–¼</span>
                         <h4>
                             ${team.participantName}
                             <span class="player-count-badge">${playerCount} players</span>
                         </h4>
-                        ${team.participantEmail ? `<div style="font-size: 0.85em; color: #666; font-weight: normal; margin-top: 4px;">📧 ${team.participantEmail}</div>` : ''}
+                        ${team.participantEmail ? `<div style="font-size: 0.85em; color: #666; font-weight: normal; margin-top: 4px;">ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â§ ${team.participantEmail}</div>` : ''}
                     </div>
-                    <span class="team-score">${formatScore(bestScore)} ${isTied ? '⚡' : ''}</span>
+                    <span class="team-score">${formatScore(bestScore)} ${isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}</span>
                 </div>
                 
                 <div class="team-roster-content" id="roster-${teamIndex}">
@@ -1564,9 +1564,9 @@ function updateTeamsView() {
                                     <span>
                                         <span class="tier-badge tier-${p.tier}">T${p.tier}</span>
                                         ${p.name}
-                                        ${isBestPlayer ? '<span style="color: #FFD700; margin-left: 6px;">⭐</span>' : ''}
+                                        ${isBestPlayer ? '<span style="color: #FFD700; margin-left: 6px;">ÃƒÂ¢Ã…â€œÃ¢â‚¬Â</span>' : ''}
                                     </span>
-                                    <strong style="font-size: 1em;">${formatScore(p.score)} ${p.missedCut ? '⚡' : ''}</strong>
+                                    <strong style="font-size: 1em;">${formatScore(p.score)} ${p.missedCut ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}</strong>
                                 </div>
                             `;
                         }).join('')}
@@ -1655,7 +1655,7 @@ function toggleAllTeams() {
     
     // Update button text
     if (button) {
-        button.textContent = shouldExpand ? 'ðŸ“ Collapse All' : 'ðŸ“‚ Expand All';
+        button.textContent = shouldExpand ? 'ðŸ“ Collapse All' : 'ðŸ“‚ Expand All';
     }
 }
 
@@ -1670,12 +1670,12 @@ function updateBulkScores() {
     const text = input.value.trim();
     
     if (!text) {
-        showBulkStatus('ÃƒÂ¢Ã‚ÂÃ‚Â Please paste some scores first!', 'error');
+        showBulkStatus('ÃƒÂ¢Ã‚ÂÃ‚Â Please paste some scores first!', 'error');
         return;
     }
     
     console.log('=== BULK SCORE UPDATE ===');
-    showBulkStatus('ÃƒÂ¢Ã‚ÂÃ‚Â³ Processing scores...', 'info');
+    showBulkStatus('ÃƒÂ¢Ã‚ÂÃ‚Â³ Processing scores...', 'info');
     
     const lines = text.split('\n').filter(line => line.trim());
     console.log(`Processing ${lines.length} lines`);
@@ -1714,7 +1714,7 @@ function updateBulkScores() {
             
         } catch (error) {
             errors++;
-            console.error(`ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Error on line ${index + 1}:`, error.message);
+            console.error(`ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Error on line ${index + 1}:`, error.message);
         }
     });
     
@@ -1732,15 +1732,15 @@ function updateBulkScores() {
         message = `ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Updated ${updated} player${updated > 1 ? 's' : ''}!`;
         
         if (notFound > 0) {
-            message += `\nâš ï¸ ${notFound} player${notFound > 1 ? 's' : ''} not found: ${notFoundPlayers.slice(0, 5).join(', ')}${notFoundPlayers.length > 5 ? '...' : ''}`;
+            message += `\nâš ï¸ ${notFound} player${notFound > 1 ? 's' : ''} not found: ${notFoundPlayers.slice(0, 5).join(', ')}${notFoundPlayers.length > 5 ? '...' : ''}`;
             type = 'warning';
         }
         
         if (errors > 0) {
-            message += `\nÃƒÂ¢Ã‚ÂÃ‚Â ${errors} error${errors > 1 ? 's' : ''}`;
+            message += `\nÃƒÂ¢Ã‚ÂÃ‚Â ${errors} error${errors > 1 ? 's' : ''}`;
         }
     } else {
-        message = 'ÃƒÂ¢Ã‚ÂÃ‚Â No players updated. Check player names match the database.';
+        message = 'ÃƒÂ¢Ã‚ÂÃ‚Â No players updated. Check player names match the database.';
         type = 'error';
     }
     
@@ -1900,13 +1900,13 @@ function connectGoogleSheet() {
     const url = input.value.trim();
     
     if (!url) {
-        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Please enter a Google Sheets CSV URL');
+        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Please enter a Google Sheets CSV URL');
         return;
     }
     
     // Validate URL
     if (!url.includes('docs.google.com') && !url.includes('spreadsheets')) {
-        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Invalid URL. Must be a Google Sheets URL.');
+        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Invalid URL. Must be a Google Sheets URL.');
         return;
     }
     
@@ -1932,7 +1932,7 @@ function connectGoogleSheet() {
  */
 async function syncScoresNow() {
     if (!CONFIG.sheetsUrl) {
-        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Please connect a Google Sheet first');
+        alert('ÃƒÂ¢Ã‚ÂÃ‚Â Please connect a Google Sheet first');
         return;
     }
     
@@ -1941,7 +1941,7 @@ async function syncScoresNow() {
     
     const syncButton = document.getElementById('syncButton');
     syncButton.disabled = true;
-    syncButton.textContent = 'ÃƒÂ¢Ã‚ÂÃ‚Â³ Syncing...';
+    syncButton.textContent = 'ÃƒÂ¢Ã‚ÂÃ‚Â³ Syncing...';
     
     try {
         const data = await fetchCSVData(CONFIG.sheetsUrl);
@@ -1970,8 +1970,8 @@ async function syncScoresNow() {
         console.log(`ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Updated ${updated} player scores`);
         
     } catch (error) {
-        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Sync error:', error);
-        updateSyncStatus(`ÃƒÂ¢Ã‚ÂÃ‚Â Sync failed: ${error.message}`, 'error');
+        console.error('ÃƒÂ¢Ã…â€œÃ¢â‚¬â€ Sync error:', error);
+        updateSyncStatus(`ÃƒÂ¢Ã‚ÂÃ‚Â Sync failed: ${error.message}`, 'error');
     } finally {
         syncButton.disabled = false;
         syncButton.textContent = 'ðŸ”„ Sync Now';
@@ -2294,7 +2294,7 @@ function updateTrackingView() {
             '<span class="movement-indicator down">" Chasing</span>';
         
         const bestPlayerText = team.isTied 
-            ? `${team.bestPlayers.map(p => p.name).join(' & ')} (TIED ⚡)`
+            ? `${team.bestPlayers.map(p => p.name).join(' & ')} (TIED ÃƒÂ¢Ã…Â¡Ã‚Â¡)`
             : team.bestPlayers[0] ? team.bestPlayers[0].name : 'None';
         
         teamHTML += `
@@ -2307,7 +2307,7 @@ function updateTrackingView() {
                                 ${team.participantName}
                             </h4>
                             <div style="font-size: 2.2em; font-weight: 700; color: ${pos === 1 ? 'var(--masters-gold)' : 'var(--augusta-green)'}; font-family: 'Playfair Display', serif;">
-                                ${formatScore(team.totalScore)} ${team.isTied ? '⚡' : ''}
+                                ${formatScore(team.totalScore)} ${team.isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}
                             </div>
                         </div>
                         
@@ -2335,7 +2335,7 @@ function updateTrackingView() {
                             const isBest = p.score === team.totalScore && !p.missedCut;
                             return `
                                 <div class="player-mini ${p.missedCut ? 'missed-cut' : ''} ${isBest ? 'best-player-mini' : ''}">
-                                    ${p.name}: ${formatScore(p.score)} ${isBest ? '⭐' : ''} ${p.missedCut ? '⚡' : ''}
+                                    ${p.name}: ${formatScore(p.score)} ${isBest ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â' : ''} ${p.missedCut ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}
                                 </div>
                             `;
                         }).join('')}
@@ -2372,12 +2372,12 @@ function updateTrackingView() {
                         <div style="color: #2e7d32; font-weight: 600; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">Made Cut</div>
                     </div>
                     <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border-radius: 12px;">
-                        <div style="font-size: 3em; margin-bottom: 10px;">ÃƒÂ¢Ã‚ÂÃ‚Â</div>
+                        <div style="font-size: 3em; margin-bottom: 10px;">ÃƒÂ¢Ã‚ÂÃ‚Â</div>
                         <div style="font-size: 2em; font-weight: 700; color: #c62828;">${missedCutCount}</div>
                         <div style="color: #c62828; font-weight: 600; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">Missed Cut</div>
                     </div>
                     <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-radius: 12px;">
-                        <div style="font-size: 3em; margin-bottom: 10px;">âš ï¸</div>
+                        <div style="font-size: 3em; margin-bottom: 10px;">âš ï¸</div>
                         <div style="font-size: 2em; font-weight: 700; color: #f57f17;">~50</div>
                         <div style="color: #f57f17; font-weight: 600; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">Cut Line</div>
                     </div>
@@ -2385,7 +2385,7 @@ function updateTrackingView() {
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <h4 style="color: var(--text-light); font-size: 1em; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                        ⚡ CUT LINE ⚡
+                        ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CUT LINE ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
                     </h4>
                     <div class="cut-line"></div>
                     <p style="color: var(--text-light); font-size: 0.9em; margin-top: 15px;">
@@ -2511,13 +2511,13 @@ function updateResultsView() {
             <div class="confetti"></div>
             <div class="confetti"></div>
             
-            <div class="trophy">ðŸ†</div>
+            <div class="trophy">ðŸ†</div>
             <h2 style="font-size: 3.5em; margin: 20px 0;">
                 ${winner.participantName}
             </h2>
             <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 15px; margin: 20px 0; backdrop-filter: blur(10px);">
                 <p style="font-size: 1.2em; color: white; font-weight: 400; margin-bottom: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">
-                    ${winner.isTied ? 'ðŸ… Champion Players ðŸ…' : 'â­ Champion Player â­'}
+                    ${winner.isTied ? 'ðŸ… Champion Players ðŸ…' : 'â­ Champion Player â­'}
                 </p>
                 <p style="font-size: 1.8em; color: white; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                     ${winnerPlayerText}
@@ -2528,7 +2528,7 @@ function updateResultsView() {
             </div>
             ${winner.isTied ? `
                 <p style="font-size: 1em; color: rgba(255,255,255,0.95); margin-top: 20px; font-style: italic; background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 10px; display: inline-block;">
-                    ⚡ Multiple players tied for team's best score
+                    ÃƒÂ¢Ã…Â¡Ã‚Â¡ Multiple players tied for team's best score
                 </p>
             ` : ''}
             <p style="font-size: 1.1em; color: rgba(255,255,255,0.9); margin-top: 25px; font-weight: 500; letter-spacing: 2px;">
@@ -2555,7 +2555,7 @@ function updateResultsView() {
                         <h4 style="font-family: 'Playfair Display', serif; font-size: 1.5em;">${team.participantName}</h4>
                         <p style="color: #666;">Top: ${topPlayerText}</p>
                     </div>
-                    <div class="team-score" style="font-family: 'Playfair Display', serif;">${formatScore(team.totalScore)} ${team.isTied ? '⚡' : ''}</div>
+                    <div class="team-score" style="font-family: 'Playfair Display', serif;">${formatScore(team.totalScore)} ${team.isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}</div>
                 </div>
             </div>
         `;
@@ -2572,7 +2572,7 @@ function updateResultsView() {
     
     tournamentStats.innerHTML = `
         <div class="stat-card">
-            <span class="stat-icon">ðŸ†</span>
+            <span class="stat-icon">ðŸ†</span>
             <h4>Champion Score</h4>
             <div class="stat-value">${formatScore(best)}</div>
             <p style="color: var(--text-light); font-size: 0.85em; margin-top: 10px;">Winning Performance</p>
@@ -2596,7 +2596,7 @@ function updateResultsView() {
             <p style="color: var(--text-light); font-size: 0.85em; margin-top: 10px;">Players Advancing</p>
         </div>
         <div class="stat-card">
-            <span class="stat-icon">⚡</span>
+            <span class="stat-icon">ÃƒÂ¢Ã…Â¡Ã‚Â¡</span>
             <h4>Teams With Ties</h4>
             <div class="stat-value">${teamsWithTies}</div>
             <p style="color: var(--text-light); font-size: 0.85em; margin-top: 10px;">Tied Best Players</p>
@@ -2675,12 +2675,10 @@ function importScoresFromCSV() {
         });
         
         if (updates > 0) {
-            // Save scores to Firebase so all clients update
             if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
-                const scoreData = golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]}));
-                database.ref('playerScores').set(scoreData).catch(e => console.error('Score save error:', e));
+                database.ref('playerScores').set(golfers.map(g => ({id:g.id,name:g.name,score:g.score,missedCut:g.missedCut,rounds:g.rounds||[0,0,0,0]}))).catch(e => console.error('Score save error:',e));
             }
-            localStorage.setItem('masters2026_scores', JSON.stringify(golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]}))));
+            localStorage.setItem('masters2026_scores', JSON.stringify(golfers.map(g => ({id:g.id,name:g.name,score:g.score,missedCut:g.missedCut,rounds:g.rounds||[0,0,0,0]}))));
             saveToStorage();
             updateAllViews();
             
@@ -2691,7 +2689,7 @@ function importScoresFromCSV() {
             
             let message = `ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Updated ${updates} golfer${updates !== 1 ? 's' : ''}!`;
             if (errors.length > 0) {
-                message += `\n\nâš ï¸ ${errors.length} error${errors.length !== 1 ? 's' : ''}:\n${errors.join('\n')}`;
+                message += `\n\nâš ï¸ ${errors.length} error${errors.length !== 1 ? 's' : ''}:\n${errors.join('\n')}`;
             }
             
             // Show in admin status if available
@@ -2707,7 +2705,7 @@ function importScoresFromCSV() {
                 csvInput.value = '';
             }
         } else {
-            const errorMsg = 'ÃƒÂ¢Ã‚ÂÃ…â€™ No scores updated.\n\n' + errors.join('\n');
+            const errorMsg = 'ÃƒÂ¢Ã‚ÂÃ…â€™ No scores updated.\n\n' + errors.join('\n');
             if (typeof showStatus === 'function') {
                 showStatus('csvStatus', errorMsg.replace(/\n/g, '<br>'), 'error');
             } else {
@@ -2737,7 +2735,7 @@ async function fetchScoresFromAPI() {
 // ===== FORM GUIDE TAB =====
 
 function updateFormGuideView() {
-    console.log('â†©ï¸ Updating Form Guide view...');
+    console.log('â†©ï¸ Updating Form Guide view...');
     
     const formGuideDisplay = document.getElementById('formGuideDisplay');
     if (!formGuideDisplay) return;
@@ -2883,7 +2881,7 @@ function renderFormDetails(golfer) {
                         <strong>Score:</strong> ${formatScore(golfer.masters2025.score)}
                     </div>
                     <div>
-                        <strong>Result:</strong> ${golfer.masters2025.madeCut ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Made Cut' : 'ÃƒÂ¢Ã‚ÂÃ…â€™ Missed Cut'}
+                        <strong>Result:</strong> ${golfer.masters2025.madeCut ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Made Cut' : 'ÃƒÂ¢Ã‚ÂÃ…â€™ Missed Cut'}
                     </div>
                 </div>
                 <div style="margin-top: 10px;">
@@ -3054,7 +3052,7 @@ function toggleFormDetails(golferId) {
         button.textContent = 'Hide Form Guide â–²';
     } else {
         details.style.display = 'none';
-        button.textContent = 'View Full Form Guide ▼';
+        button.textContent = 'View Full Form Guide â–¼';
     }
 }
 
@@ -3335,7 +3333,7 @@ function renderSweepstakeLeaderboard() {
                     <div style="margin-top: 10px; color: #666; font-size: 0.95em;">
                         <strong>${ts.bestPlayer.name}</strong> â€¢ 
                         ${ts.activePlayers} active â€¢ ${ts.cutPlayers} cut
-                        <span style="float: right;">▼ Click to expand</span>
+                        <span style="float: right;">â–¼ Click to expand</span>
                     </div>
                 </div>
                 <div id="team-${index}-details" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
