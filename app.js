@@ -379,8 +379,7 @@ async function saveToStorage() {
         await saveData('snakeDraftComplete', snakeDraftComplete);
         await saveData('draftInProgress', draftInProgress);
         await saveData('currentPickIndex', currentPick);
-        // Save golfer scores so all clients see live score updates
-        await saveData('playerScores', golfers);
+        await saveData('playerScores', golfers.map(g => ({id: g.id, name: g.name, score: g.score, missedCut: g.missedCut, rounds: g.rounds})));
         
         console.log('âœ… Data saved successfully');
         return true;
@@ -419,15 +418,10 @@ async function loadFromStorage() {
         } else if (draftedPlayers && draftedPlayers.length > 0) {
             currentPick = draftedPlayers.length;
         }
-        // Apply saved scores to golfers array
         if (savedScores && Array.isArray(savedScores)) {
-            savedScores.forEach(saved => {
-                const golfer = golfers.find(g => g.id === saved.id);
-                if (golfer) {
-                    golfer.score = saved.score || 0;
-                    golfer.missedCut = saved.missedCut || false;
-                    golfer.rounds = saved.rounds || [0,0,0,0];
-                }
+            savedScores.forEach(s => {
+                const g = golfers.find(g => g.id === s.id);
+                if (g) { g.score = s.score || 0; g.missedCut = s.missedCut || false; g.rounds = s.rounds || [0,0,0,0]; }
             });
         }
         
@@ -550,23 +544,18 @@ function setupRealtimeListeners() {
             updateTrackingView();
         }
     });
-
-    // Listen for score updates so leaderboard updates in real time
+    
     listenToData('playerScores', (data) => {
         if (data && Array.isArray(data)) {
-            data.forEach(saved => {
-                const golfer = golfers.find(g => g.id === saved.id);
-                if (golfer) {
-                    golfer.score = saved.score || 0;
-                    golfer.missedCut = saved.missedCut || false;
-                    golfer.rounds = saved.rounds || [0,0,0,0];
-                }
+            data.forEach(s => {
+                const g = golfers.find(g => g.id === s.id);
+                if (g) { g.score = s.score || 0; g.missedCut = s.missedCut || false; g.rounds = s.rounds || [0,0,0,0]; }
             });
-            updateLeaderboardView();
-            updateTeamsView();
+            if (typeof updateLeaderboardView === 'function') updateLeaderboardView();
+            if (typeof updateTeamsView === 'function') updateTeamsView();
         }
     });
-    
+
     console.log('âœ… Real-time listeners active');
 }
 
