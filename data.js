@@ -18,7 +18,7 @@ const masters2026Field = [
     { name: "Collin Morikawa", score: 2, rank: 6, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Xander Schauffele", score: -2, rank: 7, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Russell Henley", score: 1, rank: 8, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
-    { name: "Robert MacIntyre", score: 3, rank: 9, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
+    { name: "Robert MacIntyre", score: 8, rank: 9, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Chris Gotterup", score: 1, rank: 10, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
 
     // TIER 2 - World 11-25
