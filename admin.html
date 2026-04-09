@@ -328,59 +328,53 @@ Tiger Woods, 2, true"></textarea>
                 showStatus('csvStatus', 'Please paste CSV data first', 'warning');
                 return;
             }
-
-            // Ensure golfers array is populated
+            // Ensure golfers populated
             if (typeof golfers === 'undefined' || !golfers || golfers.length === 0) {
                 if (typeof initializeGolfers === 'function') initializeGolfers();
-                else if (typeof masters2026Field !== 'undefined') golfers = masters2026Field.map((g, i) => ({...g, id: i + 1}));
+                else if (typeof masters2026Field !== 'undefined') golfers = masters2026Field.map((g,i) => ({...g, id:i+1}));
             }
             if (!golfers || golfers.length === 0) {
                 showStatus('csvStatus', 'Error: golfer data not loaded. Refresh and try again.', 'error');
                 return;
             }
-
             const lines = csv.split('\n').filter(l => l.trim());
             let updates = 0;
             const errors = [];
-
             lines.forEach((line, idx) => {
                 const parts = line.split(',').map(p => p.trim());
-                if (parts.length < 3) { errors.push('Line ' + (idx+1) + ': needs Name, Score, MissedCut'); return; }
+                if (parts.length < 3) { errors.push('Line '+(idx+1)+': needs Name, Score, MissedCut'); return; }
                 const name = parts[0];
                 const scoreStr = parts[1];
                 const missedCut = ['true','t','yes'].includes(parts[2].toLowerCase());
                 let score = 0;
-                if (scoreStr.toLowerCase() === 'e' || scoreStr === '0') {
-                    score = 0;
-                } else {
-                    score = parseInt(scoreStr.replace('+', ''));
-                    if (isNaN(score)) { errors.push('Line ' + (idx+1) + ': invalid score "' + scoreStr + '"'); return; }
+                if (scoreStr.toLowerCase() === 'e' || scoreStr === '0') { score = 0; }
+                else {
+                    score = parseInt(scoreStr.replace('+',''));
+                    if (isNaN(score)) { errors.push('Line '+(idx+1)+': invalid score "'+scoreStr+'"'); return; }
                 }
                 const golfer = golfers.find(g =>
                     g.name.toLowerCase().includes(name.toLowerCase()) ||
                     name.toLowerCase().includes(g.name.toLowerCase())
                 );
                 if (golfer) { golfer.score = score; golfer.missedCut = missedCut; updates++; }
-                else { errors.push('Line ' + (idx+1) + ': "' + name + '" not found'); }
+                else { errors.push('Line '+(idx+1)+': "'+name+'" not found'); }
             });
-
             if (updates === 0) {
-                showStatus('csvStatus', 'No scores updated.<br>' + errors.join('<br>'), 'error');
+                showStatus('csvStatus', 'No scores updated.<br>'+errors.join('<br>'), 'error');
                 return;
             }
-
-            const scoreData = golfers.map(g => ({id:g.id, name:g.name, score:g.score, missedCut:g.missedCut, rounds:g.rounds||[0,0,0,0]}));
+            const scoreData = golfers.map(g => ({id:g.id,name:g.name,score:g.score,missedCut:g.missedCut,rounds:g.rounds||[0,0,0,0]}));
             try {
                 if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
                     await database.ref('playerScores').set(scoreData);
                 }
                 localStorage.setItem('masters2026_scores', JSON.stringify(scoreData));
-                let msg = 'Updated ' + updates + ' player(s) successfully!';
-                if (errors.length > 0) msg += '<br>Warnings:<br>' + errors.join('<br>');
+                let msg = 'Updated '+updates+' player(s)!';
+                if (errors.length > 0) msg += '<br>Warnings:<br>'+errors.join('<br>');
                 showStatus('csvStatus', msg, errors.length > 0 ? 'warning' : 'good');
                 if (errors.length === 0) document.getElementById('csvInput').value = '';
             } catch(e) {
-                showStatus('csvStatus', 'Save failed: ' + e.message, 'error');
+                showStatus('csvStatus', 'Save failed: '+e.message, 'error');
             }
         }
         
