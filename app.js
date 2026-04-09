@@ -1535,14 +1535,14 @@ function updateTeamsView() {
             <div class="team-roster">
                 <div class="team-roster-header" onclick="toggleTeamRoster(${teamIndex})">
                     <div class="team-name-section">
-                        <span class="collapse-icon" id="icon-${teamIndex}">â–¼</span>
+                        <span class="collapse-icon" id="icon-${teamIndex}">▼</span>
                         <h4>
                             ${team.participantName}
                             <span class="player-count-badge">${playerCount} players</span>
                         </h4>
                         ${team.participantEmail ? `<div style="font-size: 0.85em; color: #666; font-weight: normal; margin-top: 4px;">ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â§ ${team.participantEmail}</div>` : ''}
                     </div>
-                    <span class="team-score">${formatScore(bestScore)} ${isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}</span>
+                    <span class="team-score">${formatScore(bestScore)} ${isTied ? '*' : ''}</span>
                 </div>
                 
                 <div class="team-roster-content" id="roster-${teamIndex}">
@@ -1556,7 +1556,7 @@ function updateTeamsView() {
                                         ${p.name}
                                         ${isBestPlayer ? '<span style="color: #FFD700; margin-left: 6px;">ÃƒÂ¢Ã…â€œÃ¢â‚¬Â</span>' : ''}
                                     </span>
-                                    <strong style="font-size: 1em;">${formatScore(p.score)} ${p.missedCut ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}</strong>
+                                    <strong style="font-size: 1em;">${formatScore(p.score)} ${p.missedCut ? '*Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}</strong>
                                 </div>
                             `;
                         }).join('')}
@@ -2284,7 +2284,7 @@ function updateTrackingView() {
             '<span class="movement-indicator down">" Chasing</span>';
         
         const bestPlayerText = team.isTied 
-            ? `${team.bestPlayers.map(p => p.name).join(' & ')} (TIED ÃƒÂ¢Ã…Â¡Ã‚Â¡)`
+            ? `${team.bestPlayers.map(p => p.name).join(' & ')} (TIED *)`
             : team.bestPlayers[0] ? team.bestPlayers[0].name : 'None';
         
         teamHTML += `
@@ -2297,7 +2297,7 @@ function updateTrackingView() {
                                 ${team.participantName}
                             </h4>
                             <div style="font-size: 2.2em; font-weight: 700; color: ${pos === 1 ? 'var(--masters-gold)' : 'var(--augusta-green)'}; font-family: 'Playfair Display', serif;">
-                                ${formatScore(team.totalScore)} ${team.isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}
+                                ${formatScore(team.totalScore)} ${team.isTied ? '*' : ''}
                             </div>
                         </div>
                         
@@ -2325,7 +2325,7 @@ function updateTrackingView() {
                             const isBest = p.score === team.totalScore && !p.missedCut;
                             return `
                                 <div class="player-mini ${p.missedCut ? 'missed-cut' : ''} ${isBest ? 'best-player-mini' : ''}">
-                                    ${p.name}: ${formatScore(p.score)} ${isBest ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â' : ''} ${p.missedCut ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}
+                                    ${p.name}: ${formatScore(p.score)} ${isBest ? 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â' : ''} ${p.missedCut ? '*Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â' : ''}
                                 </div>
                             `;
                         }).join('')}
@@ -2375,7 +2375,7 @@ function updateTrackingView() {
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <h4 style="color: var(--text-light); font-size: 1em; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                        ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CUT LINE ÃƒÂ¢Ã…Â¡Ã‚Â¡Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
+                        *Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â CUT LINE *Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â
                     </h4>
                     <div class="cut-line"></div>
                     <p style="color: var(--text-light); font-size: 0.9em; margin-top: 15px;">
@@ -2518,7 +2518,7 @@ function updateResultsView() {
             </div>
             ${winner.isTied ? `
                 <p style="font-size: 1em; color: rgba(255,255,255,0.95); margin-top: 20px; font-style: italic; background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 10px; display: inline-block;">
-                    ÃƒÂ¢Ã…Â¡Ã‚Â¡ Multiple players tied for team's best score
+                    * Multiple players tied for team's best score
                 </p>
             ` : ''}
             <p style="font-size: 1.1em; color: rgba(255,255,255,0.9); margin-top: 25px; font-weight: 500; letter-spacing: 2px;">
@@ -2545,7 +2545,7 @@ function updateResultsView() {
                         <h4 style="font-family: 'Playfair Display', serif; font-size: 1.5em;">${team.participantName}</h4>
                         <p style="color: #666;">Top: ${topPlayerText}</p>
                     </div>
-                    <div class="team-score" style="font-family: 'Playfair Display', serif;">${formatScore(team.totalScore)} ${team.isTied ? 'ÃƒÂ¢Ã…Â¡Ã‚Â¡' : ''}</div>
+                    <div class="team-score" style="font-family: 'Playfair Display', serif;">${formatScore(team.totalScore)} ${team.isTied ? '*' : ''}</div>
                 </div>
             </div>
         `;
@@ -2586,7 +2586,7 @@ function updateResultsView() {
             <p style="color: var(--text-light); font-size: 0.85em; margin-top: 10px;">Players Advancing</p>
         </div>
         <div class="stat-card">
-            <span class="stat-icon">ÃƒÂ¢Ã…Â¡Ã‚Â¡</span>
+            <span class="stat-icon">*</span>
             <h4>Teams With Ties</h4>
             <div class="stat-value">${teamsWithTies}</div>
             <p style="color: var(--text-light); font-size: 0.85em; margin-top: 10px;">Tied Best Players</p>
@@ -3042,7 +3042,7 @@ function toggleFormDetails(golferId) {
         button.textContent = 'Hide Form Guide â–²';
     } else {
         details.style.display = 'none';
-        button.textContent = 'View Full Form Guide â–¼';
+        button.textContent = 'View Full Form Guide ▼';
     }
 }
 
@@ -3323,7 +3323,7 @@ function renderSweepstakeLeaderboard() {
                     <div style="margin-top: 10px; color: #666; font-size: 0.95em;">
                         <strong>${ts.bestPlayer.name}</strong> â€¢ 
                         ${ts.activePlayers} active â€¢ ${ts.cutPlayers} cut
-                        <span style="float: right;">â–¼ Click to expand</span>
+                        <span style="float: right;">▼ Click to expand</span>
                     </div>
                 </div>
                 <div id="team-${index}-details" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
