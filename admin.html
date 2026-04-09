@@ -331,15 +331,16 @@ Tiger Woods, 2, true"></textarea>
             }
 
             // Ensure golfers array is populated
-            if (!golfers || golfers.length === 0) {
-                if (typeof initializeGolfers === 'function') initializeGolfers();
-                else if (typeof masters2026Field !== 'undefined') {
+            if (typeof golfers === 'undefined' || !golfers || golfers.length === 0) {
+                if (typeof initializeGolfers === 'function') {
+                    initializeGolfers();
+                } else if (typeof masters2026Field !== 'undefined') {
                     golfers = masters2026Field.map((g, i) => ({...g, id: i + 1}));
                 }
             }
 
             if (!golfers || golfers.length === 0) {
-                showStatus('csvStatus', 'Error: golfer data not loaded. Please refresh and try again.', 'error');
+                showStatus('csvStatus', 'Error: golfer data not loaded. Please refresh the page and try again.', 'error');
                 return;
             }
 
@@ -350,13 +351,13 @@ Tiger Woods, 2, true"></textarea>
             lines.forEach((line, index) => {
                 const parts = line.split(',').map(p => p.trim());
                 if (parts.length < 3) {
-                    errors.push('Line ' + (index+1) + ': needs Name, Score, MissedCut');
+                    errors.push('Line ' + (index + 1) + ': needs Name, Score, MissedCut');
                     return;
                 }
 
                 const name = parts[0];
                 const scoreStr = parts[1];
-                const missedCut = ['true','t','yes'].includes(parts[2].toLowerCase());
+                const missedCut = ['true', 't', 'yes'].includes(parts[2].toLowerCase());
 
                 let score = 0;
                 if (scoreStr.toLowerCase() === 'e' || scoreStr === '0') {
@@ -364,7 +365,7 @@ Tiger Woods, 2, true"></textarea>
                 } else {
                     score = parseInt(scoreStr.replace('+', ''));
                     if (isNaN(score)) {
-                        errors.push('Line ' + (index+1) + ': invalid score "' + scoreStr + '"');
+                        errors.push('Line ' + (index + 1) + ': invalid score "' + scoreStr + '"');
                         return;
                     }
                 }
@@ -380,7 +381,7 @@ Tiger Woods, 2, true"></textarea>
                     golfer.missedCut = missedCut;
                     updates++;
                 } else {
-                    errors.push('Line ' + (index+1) + ': "' + name + '" not found');
+                    errors.push('Line ' + (index + 1) + ': "' + name + '" not found');
                 }
             });
 
@@ -389,29 +390,28 @@ Tiger Woods, 2, true"></textarea>
                 return;
             }
 
-            // Build score data to save
+            // Build score payload
             const scoreData = golfers.map(g => ({
                 id: g.id, name: g.name, score: g.score,
-                missedCut: g.missedCut, rounds: g.rounds || [0,0,0,0]
+                missedCut: g.missedCut, rounds: g.rounds || [0, 0, 0, 0]
             }));
 
             try {
-                // Save directly to Firebase
+                // Write directly to Firebase
                 if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
                     await database.ref('playerScores').set(scoreData);
-                    console.log('Scores saved to Firebase');
                 }
-                // Also save to localStorage as backup
+                // Always update localStorage too
                 localStorage.setItem('masters2026_scores', JSON.stringify(scoreData));
 
                 let msg = 'Updated ' + updates + ' player(s) successfully!';
-                if (errors.length > 0) msg += '<br><br>Warnings:<br>' + errors.join('<br>');
+                if (errors.length > 0) msg += '<br><br>Warnings (' + errors.length + '):<br>' + errors.join('<br>');
                 showStatus('csvStatus', msg, errors.length > 0 ? 'warning' : 'good');
 
                 if (errors.length === 0) {
                     document.getElementById('csvInput').value = '';
                 }
-            } catch(e) {
+            } catch (e) {
                 showStatus('csvStatus', 'Scores parsed but save failed: ' + e.message, 'error');
             }
         }
@@ -793,7 +793,7 @@ Tiger Woods, 2, true"></textarea>
         }
         
         async function adminSeedDraft() {
-            if (!confirm('RESET & SEED DRAFT?\n\nWill set:\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\nThen James Parker picks next.\n\nAll existing draft data cleared!')) return;
+            if (!confirm('RESET & SEED DRAFT?\n\n1. Jack Hobbs -> Scottie Scheffler\n2. Nick Barker -> Rory McIlroy\nThen James Parker picks next.\n\nAll existing draft data will be cleared!')) return;
 
             const orderedParticipants = [
                 {id:'p1',name:'Jack Hobbs',email:''},{id:'p2',name:'Nick Barker',email:''},
@@ -802,8 +802,6 @@ Tiger Woods, 2, true"></textarea>
                 {id:'p7',name:'Joe Day',email:''},{id:'p8',name:'Harry Wetherald',email:''},
                 {id:'p9',name:'Joe Johnson',email:''}
             ];
-
-            // Preserve emails from existing participants
             try {
                 const existing = JSON.parse(localStorage.getItem('masters2026_participants') || '[]');
                 orderedParticipants.forEach(op => {
@@ -816,14 +814,11 @@ Tiger Woods, 2, true"></textarea>
                 {participantId:'p1',participantName:'Jack Hobbs',golferId:1,golferName:'Scottie Scheffler',pickNumber:1,round:1,timestamp:new Date().toISOString()},
                 {participantId:'p2',participantName:'Nick Barker',golferId:3,golferName:'Rory McIlroy',pickNumber:2,round:1,timestamp:new Date().toISOString()}
             ];
-
             const state = {
-                participants: orderedParticipants, draftOrder: orderedParticipants,
-                signupClosed: true, draftInProgress: true,
-                snakeDraftComplete: false, draftComplete: false,
-                teams: [], draftedPlayers: draftedPlayers, currentPickIndex: 2
+                participants:orderedParticipants, draftOrder:orderedParticipants,
+                signupClosed:true, draftInProgress:true, snakeDraftComplete:false,
+                draftComplete:false, teams:[], draftedPlayers:draftedPlayers, currentPickIndex:2
             };
-
             try {
                 if (typeof firebaseInitialized !== 'undefined' && firebaseInitialized && typeof database !== 'undefined') {
                     await database.ref('draftedPlayers').remove();
@@ -832,17 +827,12 @@ Tiger Woods, 2, true"></textarea>
                     await database.ref('/').update(state);
                 }
                 Object.entries({
-                    'masters2026_participants': state.participants,
-                    'masters2026_draftOrder': state.draftOrder,
-                    'masters2026_signupClosed': state.signupClosed,
-                    'masters2026_draftInProgress': state.draftInProgress,
-                    'masters2026_snakeDraftComplete': state.snakeDraftComplete,
-                    'masters2026_draft': state.draftComplete,
-                    'masters2026_teams': state.teams,
-                    'masters2026_draftedPlayers': state.draftedPlayers,
-                    'masters2026_currentPickIndex': state.currentPickIndex
+                    'masters2026_participants':state.participants,'masters2026_draftOrder':state.draftOrder,
+                    'masters2026_signupClosed':state.signupClosed,'masters2026_draftInProgress':state.draftInProgress,
+                    'masters2026_snakeDraftComplete':state.snakeDraftComplete,'masters2026_draft':state.draftComplete,
+                    'masters2026_teams':state.teams,'masters2026_draftedPlayers':state.draftedPlayers,
+                    'masters2026_currentPickIndex':state.currentPickIndex
                 }).forEach(([k,v]) => localStorage.setItem(k, JSON.stringify(v)));
-
                 showStatus('draftStatus', '[OK] Draft seeded! Jack Hobbs=Scheffler, Nick Barker=McIlroy. James Parker is next. Refresh main site.', 'good');
                 alert('Done! Refresh the main site.');
             } catch(e) {
