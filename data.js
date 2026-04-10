@@ -26,7 +26,7 @@ const masters2026Field = [
     { name: "Viktor Hovland", score: 3, rank: 11, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Ludvig Åberg", score: 1, rank: 12, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Patrick Cantlay", score: 5, rank: 13, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
-    { name: "Tyrrell Hatton", score: -4, rank: 14, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
+    { name: "Tyrrell Hatton", score: -5, rank: 14, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Hideki Matsuyama", score: 1, rank: 15, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Justin Thomas", score: 1, rank: 16, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Shane Lowry", score: -3, rank: 17, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
