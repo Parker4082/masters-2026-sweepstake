@@ -62,7 +62,7 @@ const masters2026Field = [
 
     // TIER 4 - World 46-65 / PGA Tour winners / other qualifiers
     { name: "Dustin Johnson", score: 0, rank: 46, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
-    { name: "Patrick Reed", score: -3, rank: 47, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Patrick Reed", score: -4, rank: 47, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Jacob Bridgeman", score: 1, rank: 48, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Nico Echavarría", score: 9, rank: 49, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Aldrich Potgieter", score: 10, rank: 50, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
