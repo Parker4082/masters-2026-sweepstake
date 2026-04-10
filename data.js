@@ -1,20 +1,22 @@
 /* ============================================
    MASTERS TOURNAMENT 2026 - GOLFER DATA
    Data source: Official 2026 Masters field (91 players confirmed)
-   Updated: April 2026
+   Updated: April 10, 2026 – Round 2 in progress
+   R1 complete. R2 scores reflect latest live updates (partial round for late starters).
+   Cut line projected at +3. Top 50 and ties advance.
    ============================================ */
 
 // Complete field of golfers for the Masters Tournament
 // Each golfer has: name, score, rank, missedCut status, round scores, and tier
 // Tiers based on OWGR at time of Masters (lower tier number = higher ranked player)
-// Scores reset to 0 - update via admin panel CSV import during tournament
+// score = total to par (R1 complete + R2 in progress where available)
 const masters2026Field = [
     // TIER 1 - World top 10
-    { name: "Scottie Scheffler", score: -2, rank: 1, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
+    { name: "Scottie Scheffler", score: 0, rank: 1, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Tommy Fleetwood", score: -1, rank: 2, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Rory McIlroy", score: -5, rank: 3, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Cameron Young", score: 1, rank: 4, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
-    { name: "Justin Rose", score: -3, rank: 5, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
+    { name: "Justin Rose", score: -4, rank: 5, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Collin Morikawa", score: 2, rank: 6, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Xander Schauffele", score: -2, rank: 7, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
     { name: "Russell Henley", score: 1, rank: 8, missedCut: false, rounds: [0, 0, 0, 0], tier: 1 },
@@ -25,13 +27,13 @@ const masters2026Field = [
     { name: "Viktor Hovland", score: 3, rank: 11, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Ludvig Åberg", score: 2, rank: 12, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Patrick Cantlay", score: 5, rank: 13, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
-    { name: "Tyrrell Hatton", score: 1, rank: 14, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
+    { name: "Tyrrell Hatton", score: -1, rank: 14, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Hideki Matsuyama", score: 0, rank: 15, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Justin Thomas", score: 0, rank: 16, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Shane Lowry", score: -2, rank: 17, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Akshay Bhatia", score: 1, rank: 18, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Sam Burns", score: -5, rank: 19, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
-    { name: "Wyndham Clark", score: 0, rank: 20, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
+    { name: "Wyndham Clark", score: -5, rank: 20, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Min Woo Lee", score: 6, rank: 21, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Keegan Bradley", score: 0, rank: 22, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
     { name: "Jon Rahm", score: 6, rank: 23, missedCut: false, rounds: [0, 0, 0, 0], tier: 2 },
@@ -55,7 +57,7 @@ const masters2026Field = [
     { name: "Sungjae Im", score: 4, rank: 39, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Kurt Kitayama", score: -3, rank: 40, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Si Woo Kim", score: 3, rank: 42, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
-    { name: "Brooks Koepka", score: 1, rank: 43, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
+    { name: "Brooks Koepka", score: -2, rank: 43, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "Cameron Smith", score: 2, rank: 44, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
     { name: "J.J. Spaun", score: 1, rank: 45, missedCut: false, rounds: [0, 0, 0, 0], tier: 3 },
 
@@ -72,7 +74,7 @@ const masters2026Field = [
     { name: "Nicolai Højgaard", score: 4, rank: 55, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Matt McCarty", score: 0, rank: 56, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Daniel Berger", score: 4, rank: 57, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
-    { name: "Gary Woodland", score: -2, rank: 58, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
+    { name: "Gary Woodland", score: 1, rank: 58, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Michael Kim", score: 3, rank: 59, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Johnny Keefer", score: 4, rank: 60, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
     { name: "Michael Brennan", score: -2, rank: 61, missedCut: false, rounds: [0, 0, 0, 0], tier: 4 },
